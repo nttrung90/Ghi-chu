@@ -94,7 +94,7 @@ class SettingsScreen extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text(AppStrings.appName),
-            subtitle: Text('Phiên bản 1.0.0 (Hỗ trợ Android, iOS, Windows)'),
+            subtitle: Text('Phiên bản 0.1.0+1 (Build 1)'),
           ),
           const ListTile(
             leading: Icon(Icons.offline_bolt_outlined),

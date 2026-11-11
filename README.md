@@ -1,4 +1,4 @@
-# Note NTT - Ứng dụng ghi chú đa nền tảng (Android, iOS, Windows & Firebase Sync)
+# T-Note - Ứng dụng ghi chú đa nền tảng (Android, iOS, Windows & Firebase Sync)
 
 Ứng dụng ghi chú hiện đại, tốc độ cao được thiết kế theo kiến trúc **Offline-First**, tự động đồng bộ hóa thời gian thực đa thiết bị thông qua **Google Firebase**.
 
@@ -15,7 +15,7 @@
 
 ---
 
-## 📱 Các tính năng chính của Note NTT
+## 📱 Các tính năng chính của T-Note
 
 1. **Ghi chú & Soạn thảo**:
    - Tiêu đề, nội dung không giới hạn độ dài.

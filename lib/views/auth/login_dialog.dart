@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/notes_provider.dart';
 
@@ -55,7 +56,7 @@ class _LoginDialogState extends State<LoginDialog> {
     final auth = context.watch<AuthProvider>();
 
     return AlertDialog(
-      title: Text(_isSignUp ? 'Đăng ký tài khoản Note NTT' : 'Đăng nhập Note NTT'),
+      title: Text(_isSignUp ? 'Đăng ký tài khoản ${AppStrings.appName}' : 'Đăng nhập ${AppStrings.appName}'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

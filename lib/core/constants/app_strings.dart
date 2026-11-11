@@ -1,5 +1,5 @@
 class AppStrings {
-  static const String appName = "Note NTT";
+  static const String appName = "T-Note";
   static const String searchNotesHint = "Tìm kiếm ghi chú, nhãn...";
   static const String allNotes = "Tất cả ghi chú";
   static const String pinnedNotes = "Đã ghim";

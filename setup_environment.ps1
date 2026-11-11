@@ -1,12 +1,12 @@
 # ========================================================
-# Script tu dong thiet lap moi truong & dong goi APK cho Note NTT
+# Script tu dong thiet lap moi truong & dong goi APK cho T-Note
 # Ho tro: Android 8.0+ (API 26), 32-bit & 64-bit, Android SDK 36
 # ========================================================
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "=================================================" -ForegroundColor Cyan
-Write-Host "     KIEM TRA MOI TRUONG PHAT TRIEN NOTE NTT     " -ForegroundColor Cyan
+Write-Host "       KIEM TRA MOI TRUONG PHAT TRIEN T-NOTE     " -ForegroundColor Cyan
 Write-Host "     Ho tro: Android 8.0+ | 32/64-bit | SDK 36   " -ForegroundColor Yellow
 Write-Host "=================================================" -ForegroundColor Cyan
 

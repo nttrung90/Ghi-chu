@@ -1,8 +1,8 @@
 name: note_ntt
-description: "Ứng dụng ghi chú Note NTT hỗ trợ đồng bộ đa nền tảng qua Firebase."
+description: "Ứng dụng ghi chú T-Note hỗ trợ đồng bộ đa nền tảng qua Firebase."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.1.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
