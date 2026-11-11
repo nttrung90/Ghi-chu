@@ -83,12 +83,16 @@ class _LoginDialogState extends State<LoginDialog> {
                 onPressed: auth.isLoading
                     ? null
                     : () async {
+                        final notesProvider = context.read<NotesProvider>();
+                        final navigator = Navigator.of(context);
+                        final messenger = ScaffoldMessenger.of(context);
                         final success = await auth.signInWithGoogle();
-                        if (success && mounted) {
-                          context.read<NotesProvider>().updateUserId(auth.user?.uid);
-                          Navigator.pop(context);
-                        } else if (auth.errorMessage != null && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                        if (!mounted) return;
+                        if (success) {
+                          notesProvider.updateUserId(auth.user?.uid);
+                          navigator.pop();
+                        } else if (auth.errorMessage != null) {
+                          messenger.showSnackBar(
                             SnackBar(content: Text(auth.errorMessage!)),
                           );
                         }
@@ -142,11 +146,12 @@ class _LoginDialogState extends State<LoginDialog> {
               icon: const Icon(Icons.person_outline),
               label: const Text('Dùng thử không cần tài khoản (Khách)'),
               onPressed: () async {
+                final notesProvider = context.read<NotesProvider>();
+                final navigator = Navigator.of(context);
                 await auth.signInAnonymously();
-                if (mounted) {
-                  context.read<NotesProvider>().updateUserId(auth.user?.uid);
-                  Navigator.pop(context);
-                }
+                if (!mounted) return;
+                notesProvider.updateUserId(auth.user?.uid);
+                navigator.pop();
               },
             ),
           ],

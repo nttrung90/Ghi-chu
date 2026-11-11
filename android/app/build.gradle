@@ -23,6 +23,24 @@ if (flutterVersionName == null) {
     flutterVersionName = '0.1.0'
 }
 
+// Đọc thông tin keystore release từ android/key.properties (file này không commit lên git)
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+def hasReleaseSigning = false
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+    hasReleaseSigning =
+        (keystoreProperties['storeFile'] ?: '').trim() &&
+        (keystoreProperties['storePassword'] ?: '').trim() &&
+        (keystoreProperties['keyAlias'] ?: '').trim() &&
+        (keystoreProperties['keyPassword'] ?: '').trim()
+    if (!hasReleaseSigning) {
+        logger.warn('key.properties chưa điền đủ thông tin — build release sẽ tạm dùng DEBUG key.')
+    }
+}
+
 android {
     namespace "com.ntt.notentt"
     // Hỗ trợ Android SDK 36 (Android 16)
@@ -48,9 +66,20 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(keystoreProperties['storeFile'].trim())
+                storePassword keystoreProperties['storePassword'].trim()
+                keyAlias keystoreProperties['keyAlias'].trim()
+                keyPassword keystoreProperties['keyPassword'].trim()
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
             minifyEnabled false
             shrinkResources false
         }

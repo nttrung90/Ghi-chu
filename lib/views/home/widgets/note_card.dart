@@ -20,7 +20,7 @@ class NoteCard extends StatelessWidget {
     final cardColor = Color(note.colorValue);
 
     // Tính toán độ tương phản chữ nếu nền sáng/tối
-    final isCardWhite = cardColor.value == 0xFFFFFFFF;
+    final isCardWhite = cardColor.toARGB32() == 0xFFFFFFFF;
     final backgroundColor = isCardWhite
         ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
         : cardColor;
@@ -38,7 +38,7 @@ class NoteCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -92,7 +92,7 @@ class NoteCard extends StatelessWidget {
                     note.content,
                     style: TextStyle(
                       fontSize: 14,
-                      color: textColor.withOpacity(0.8),
+                      color: textColor.withValues(alpha: 0.8),
                       height: 1.35,
                     ),
                     maxLines: 6,
@@ -146,12 +146,12 @@ class NoteCard extends StatelessWidget {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '#$tag',
-                          style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.7)),
+                          style: TextStyle(fontSize: 11, color: textColor.withValues(alpha: 0.7)),
                         ),
                       );
                     }).toList(),

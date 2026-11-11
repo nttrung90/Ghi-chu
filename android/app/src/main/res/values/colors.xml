@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Màu nền của icon ứng dụng T-Note -->
-    <color name="ic_launcher_background">#4DCBFE</color>
+    <color name="ic_launcher_background">#3AB9F2</color>
 </resources>

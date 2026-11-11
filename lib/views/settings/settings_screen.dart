@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
               backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
               child: user?.photoURL == null
                   ? Icon(
@@ -59,7 +59,7 @@ class SettingsScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(left: 6),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text('Google', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
@@ -98,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: Colors.green.withOpacity(0.15),
+              backgroundColor: Colors.green.withValues(alpha: 0.15),
               child: const Icon(Icons.add_to_drive, color: Colors.green),
             ),
             title: const Text('Sao lưu lên Google Drive'),
@@ -122,23 +122,27 @@ class SettingsScreen extends StatelessWidget {
           const ListTile(
             title: Text('Giao diện', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Theo hệ thống'),
-            value: ThemeMode.system,
+          RadioGroup<ThemeMode>(
             groupValue: theme.themeMode,
-            onChanged: (mode) => theme.setThemeMode(mode!),
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Chế độ Sáng'),
-            value: ThemeMode.light,
-            groupValue: theme.themeMode,
-            onChanged: (mode) => theme.setThemeMode(mode!),
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Chế độ Tối'),
-            value: ThemeMode.dark,
-            groupValue: theme.themeMode,
-            onChanged: (mode) => theme.setThemeMode(mode!),
+            onChanged: (mode) {
+              if (mode != null) theme.setThemeMode(mode);
+            },
+            child: const Column(
+              children: [
+                RadioListTile<ThemeMode>(
+                  title: Text('Theo hệ thống'),
+                  value: ThemeMode.system,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text('Chế độ Sáng'),
+                  value: ThemeMode.light,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: Text('Chế độ Tối'),
+                  value: ThemeMode.dark,
+                ),
+              ],
+            ),
           ),
 
           const Divider(),

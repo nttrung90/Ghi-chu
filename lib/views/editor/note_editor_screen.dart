@@ -165,16 +165,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   tooltip: AppStrings.delete,
                   icon: const Icon(Icons.delete_outline),
                   onPressed: () async {
-                    await context.read<NotesProvider>().moveToTrash(_id);
-                    if (mounted) Navigator.pop(context);
+                    final notesProvider = context.read<NotesProvider>();
+                    final navigator = Navigator.of(context);
+                    await notesProvider.moveToTrash(_id);
+                    if (mounted) navigator.pop();
                   },
                 ),
               IconButton(
                 tooltip: 'Lưu',
                 icon: const Icon(Icons.check),
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
                   await _saveNote();
-                  if (mounted) Navigator.pop(context);
+                  if (mounted) navigator.pop();
                 },
               ),
             ],
@@ -330,7 +333,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
+                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9),
                   border: Border(top: BorderSide(color: Colors.grey.shade300, width: 0.5)),
                 ),
                 child: SizedBox(
@@ -341,11 +344,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final color = palette[index];
-                      final isSelected = _colorValue == color.value;
+                      final isSelected = _colorValue == color.toARGB32();
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            _colorValue = color.value;
+                            _colorValue = color.toARGB32();
                             _isDirty = true;
                           });
                         },

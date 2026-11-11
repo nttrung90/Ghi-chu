@@ -28,7 +28,7 @@ class DrawerMenu extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +69,7 @@ class DrawerMenu extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 14,
-                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                         backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
                         child: user?.photoURL == null
                             ? Icon(

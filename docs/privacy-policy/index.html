@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Chính sách quyền riêng tư của ứng dụng ghi chú T-Note." />
+  <meta name="theme-color" content="#1f6feb" />
+  <title>Chính sách quyền riêng tư – T-Note</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --text: #1b2430;
+      --muted: #5b6776;
+      --border: #e3e9f1;
+      --accent: #1f6feb;
+      --accent-soft: #e8f0ff;
+      --warning-bg: #fff8e6;
+      --warning-border: #f0d48a;
+      --code-bg: #f2f5f9;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+    header.hero {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #123a6b 0%, #1f6feb 60%, #4d9bff 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 32px;
+      box-shadow: 0 12px 30px rgba(31, 111, 235, 0.18);
+    }
+    header.hero .app {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      opacity: 0.95;
+      margin-bottom: 10px;
+    }
+    header.hero .app-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.18);
+      display: inline-grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    header.hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.25;
+    }
+    header.hero p {
+      margin: 0;
+      max-width: 760px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    header.hero .dates {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 18px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    nav.toc {
+      position: sticky;
+      top: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 14px;
+    }
+    nav.toc strong {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    nav.toc ol {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+    nav.toc a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+    nav.toc a:hover { color: var(--accent); }
+    main {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      min-width: 0;
+    }
+    section { scroll-margin-top: 20px; }
+    h2 {
+      margin: 38px 0 12px;
+      font-size: 22px;
+      line-height: 1.35;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    section:first-of-type h2 { margin-top: 0; }
+    h3 {
+      margin: 24px 0 8px;
+      font-size: 17px;
+    }
+    p { margin: 10px 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    a { color: var(--accent); }
+    .summary {
+      background: var(--accent-soft);
+      border: 1px solid #cfe0ff;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+    .summary h3 { margin-top: 0; }
+    .summary ul { margin: 6px 0 0; }
+    .note {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 15px;
+    }
+    code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-size: 0.9em;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    pre code { background: none; border: 0; padding: 0; }
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f2f6fc; font-weight: 600; }
+    tbody tr:nth-child(even) { background: #fafcff; }
+    footer {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    footer a { color: var(--muted); }
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; padding: 20px 14px 48px; }
+      nav.toc { position: static; order: 2; }
+      main { order: 3; padding: 22px 18px; }
+      header.hero { padding: 26px 22px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { display: block; max-width: none; padding: 0; }
+      header.hero { box-shadow: none; border-radius: 0; }
+      nav.toc { display: none; }
+      main { border: 0; padding: 0; }
+      a { color: var(--text); text-decoration: none; }
+      h2 { page-break-after: avoid; }
+      table, .summary, .note { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="app"><span class="app-badge" aria-hidden="true">📝</span> T-Note</div>
+      <h1>Chính sách quyền riêng tư</h1>
+      <p>Chính sách này giải thích cách ứng dụng ghi chú T-Note thu thập, sử dụng, lưu trữ và bảo vệ dữ liệu của bạn trên Android, iOS và Windows.</p>
+      <div class="dates">
+        <span><strong>Cập nhật lần cuối:</strong> 11/11/2026</span>
+        <span><strong>Có hiệu lực từ:</strong> 11/11/2026</span>
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Mục lục">
+      <strong>Mục lục</strong>
+      <ol>
+        <li><a href="#gioi-thieu">Giới thiệu</a></li>
+        <li><a href="#du-lieu">Dữ liệu thu thập</a></li>
+        <li><a href="#muc-dich">Mục đích sử dụng</a></li>
+        <li><a href="#luu-tru">Lưu trữ &amp; bảo mật</a></li>
+        <li><a href="#chia-se">Chia sẻ dữ liệu</a></li>
+        <li><a href="#thoi-gian">Thời gian lưu trữ</a></li>
+        <li><a href="#xoa-du-lieu">Xóa dữ liệu &amp; tài khoản</a></li>
+        <li><a href="#quyen">Quyền của bạn</a></li>
+        <li><a href="#tre-em">Trẻ em</a></li>
+        <li><a href="#chuyen-du-lieu">Chuyển dữ liệu quốc tế</a></li>
+        <li><a href="#cookie">Cookie</a></li>
+        <li><a href="#ben-thu-ba">Bên thứ ba</a></li>
+        <li><a href="#thay-doi">Thay đổi chính sách</a></li>
+        <li><a href="#lien-he">Liên hệ</a></li>
+        <li><a href="#phu-luc">Phụ lục dữ liệu</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="gioi-thieu">
+        <h2>1. Giới thiệu</h2>
+        <p>T-Note là ứng dụng ghi chú đa nền tảng hoạt động theo kiến trúc ưu tiên ngoại tuyến (Offline-First), có thể đồng bộ ghi chú qua Google Firebase và sao lưu vào Google Drive cá nhân của người dùng.</p>
+        <p>Chính sách này giải thích chúng tôi thu thập những dữ liệu gì, vì sao, lưu trữ ở đâu, chia sẻ với ai và bạn có những quyền gì. Bằng việc tải, cài đặt hoặc sử dụng T-Note, bạn xác nhận rằng bạn đã đọc và hiểu chính sách này.</p>
+
+        <div class="summary">
+          <h3>Tóm tắt nhanh</h3>
+          <ul>
+            <li>Ghi chú của bạn được lưu trên thiết bị và chỉ được đồng bộ lên Firebase khi bạn đăng nhập.</li>
+            <li>Bạn có thể chủ động sao lưu ghi chú vào thư mục riêng trong Google Drive của chính mình.</li>
+            <li>Ứng dụng <strong>không bán</strong>, <strong>không cho thuê</strong>, <strong>không sử dụng dữ liệu để quảng cáo</strong> và <strong>không có SDK quảng cáo</strong>.</li>
+            <li>Ứng dụng <strong>không yêu cầu</strong> quyền truy cập vị trí, danh bạ, camera, micro, tin nhắn hay toàn bộ bộ nhớ thiết bị.</li>
+            <li>Bạn có thể xóa ghi chú, xóa bản sao lưu và yêu cầu xóa tài khoản bất cứ lúc nào.</li>
+          </ul>
+        </div>
+
+        <h3>Đơn vị chịu trách nhiệm</h3>
+        <p>T-Note do nhà phát triển T-Note phát triển và vận hành.</p>
+        <ul>
+          <li><strong>Tên ứng dụng:</strong> T-Note</li>
+          <li><strong>Mã ứng dụng (Android):</strong> <code>com.ntt.notentt</code></li>
+          <li><strong>Email liên hệ về quyền riêng tư:</strong> <a href="mailto:firstntt90@gmail.com">firstntt90@gmail.com</a></li>
+        </ul>
+        <p>Chúng tôi là đơn vị kiểm soát dữ liệu cá nhân đối với dữ liệu được mô tả trong chính sách này, trừ trường hợp Google xử lý dữ liệu với tư cách là đơn vị cung cấp dịch vụ hạ tầng hoặc đơn vị kiểm soát độc lập theo chính sách riêng của Google.</p>
+      </section>
+
+      <section id="du-lieu">
+        <h2>2. Dữ liệu chúng tôi thu thập</h2>
+
+        <h3>2.1. Nội dung ghi chú do bạn tạo</h3>
+        <p>Khi bạn sử dụng T-Note, ứng dụng xử lý các dữ liệu sau để cung cấp tính năng ghi chú:</p>
+        <ul>
+          <li>Tiêu đề và nội dung ghi chú.</li>
+          <li>Danh sách việc cần làm (checklist), gồm nội dung công việc và trạng thái hoàn thành.</li>
+          <li>Nhãn (tag/hashtag) bạn gắn cho ghi chú.</li>
+          <li>Màu nền, trạng thái ghim, trạng thái lưu trữ và trạng thái trong thùng rác.</li>
+          <li>Thời gian tạo và thời gian cập nhật ghi chú.</li>
+        </ul>
+        <p>Nội dung ghi chú do bạn tự nhập. Bạn không bắt buộc phải cung cấp bất kỳ thông tin nào, nhưng nếu không nhập nội dung thì ứng dụng không thể thực hiện chức năng ghi chú.</p>
+
+        <h3>2.2. Dữ liệu tài khoản</h3>
+        <p>Khi bạn đăng nhập, Firebase Authentication có thể xử lý:</p>
+        <ul>
+          <li>Địa chỉ email.</li>
+          <li>Tên hiển thị và URL ảnh đại diện (nếu bạn đăng nhập bằng Google).</li>
+          <li>Mã định danh người dùng (UID) do Firebase tạo.</li>
+          <li>Phương thức đăng nhập (Google, email/mật khẩu hoặc Khách/Anonymous).</li>
+        </ul>
+        <p>Nếu bạn dùng chế độ Khách, Firebase tạo một UID ẩn danh và không yêu cầu email, tên hay ảnh đại diện. Nếu bạn đăng ký bằng email/mật khẩu, mật khẩu do Firebase Authentication xử lý; ứng dụng không lưu, không hiển thị và không có quyền đọc mật khẩu của bạn.</p>
+
+        <h3>2.3. Dữ liệu đồng bộ và sao lưu</h3>
+        <ul>
+          <li><strong>Đồng bộ Firebase:</strong> Khi bạn đăng nhập, ghi chú được lưu trong Cloud Firestore tại đường dẫn <code>users/{UID}/notes/{noteId}</code>. Quy tắc bảo mật của Firestore chỉ cho phép chính chủ tài khoản đọc và ghi dữ liệu của mình.</li>
+          <li><strong>Sao lưu Google Drive:</strong> Khi bạn chủ động bấm sao lưu và cấp quyền, ứng dụng tạo tệp JSON chứa toàn bộ ghi chú và một số thông tin mô tả (tên tệp, thời gian tạo, số lượng ghi chú) trong thư mục <code>T-Note Backups</code> trên Google Drive của bạn.</li>
+          <li><strong>Phạm vi quyền Drive:</strong> Ứng dụng chỉ yêu cầu phạm vi <code>https://www.googleapis.com/auth/drive.file</code>. Phạm vi này chỉ cho phép ứng dụng tạo, đọc, sửa và xóa các tệp do chính ứng dụng tạo ra hoặc bạn chủ động mở bằng ứng dụng. T-Note <strong>không thể</strong> truy cập các tệp khác trong Google Drive của bạn.</li>
+        </ul>
+
+        <h3>2.4. Dữ liệu lưu cục bộ trên thiết bị</h3>
+        <p>Ứng dụng lưu trong bộ nhớ riêng của ứng dụng (SharedPreferences):</p>
+        <ul>
+          <li>Danh sách ghi chú dưới dạng JSON, để bạn sử dụng ngay khi không có mạng.</li>
+          <li>Danh sách mã ghi chú đang chờ đồng bộ lên Firebase.</li>
+          <li>Tùy chọn giao diện Sáng/Tối/Hệ thống.</li>
+        </ul>
+        <p>Dữ liệu cục bộ nằm trong vùng lưu trữ được hệ điều hành cách ly cho ứng dụng. Ứng dụng không yêu cầu quyền truy cập toàn bộ bộ nhớ thiết bị.</p>
+
+        <h3>2.5. Dữ liệu kỹ thuật do dịch vụ của Google xử lý</h3>
+        <p>Để vận hành dịch vụ, Google (Firebase Authentication, Cloud Firestore, Google Sign-In, Google Drive API và Google Fonts) có thể xử lý một số dữ liệu kỹ thuật như:</p>
+        <ul>
+          <li>Địa chỉ IP.</li>
+          <li>Loại thiết bị, hệ điều hành và phiên bản ứng dụng.</li>
+          <li>Mã thông báo xác thực (token) và thông tin phiên đăng nhập.</li>
+          <li>Thời điểm truy cập, nhật ký lỗi và sự kiện bảo mật.</li>
+        </ul>
+        <p>Ứng dụng có thể tải phông chữ Inter từ máy chủ Google Fonts khi chạy; yêu cầu này có thể gửi địa chỉ IP và thông tin thiết bị tối thiểu tới Google. Chúng tôi không dùng các dữ liệu kỹ thuật này để quảng cáo hoặc bán cho bên thứ ba.</p>
+
+        <h3>2.6. Những dữ liệu chúng tôi KHÔNG thu thập</h3>
+        <p>T-Note không yêu cầu và không cố ý thu thập:</p>
+        <ul>
+          <li>Vị trí chính xác hoặc vị trí gần đúng.</li>
+          <li>Danh bạ, nhật ký cuộc gọi, tin nhắn SMS.</li>
+          <li>Camera, micro, ảnh hoặc tệp trong bộ nhớ thiết bị.</li>
+          <li>Dữ liệu sức khỏe, dữ liệu sinh trắc học.</li>
+          <li>Mã quảng cáo (Advertising ID) hoặc dữ liệu dùng để theo dõi bạn giữa các ứng dụng.</li>
+          <li>Thông tin thanh toán.</li>
+        </ul>
+        <p>Ứng dụng không tích hợp SDK quảng cáo, không hiển thị quảng cáo và không bán dữ liệu cá nhân.</p>
+      </section>
+
+      <section id="muc-dich">
+        <h2>3. Mục đích sử dụng và cơ sở pháp lý</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Mục đích</th><th>Dữ liệu sử dụng</th><th>Cơ sở pháp lý</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Tạo, chỉnh sửa, tìm kiếm, ghim, gắn nhãn và quản lý ghi chú</td><td>Nội dung ghi chú, dữ liệu cục bộ</td><td>Thực hiện chức năng bạn yêu cầu</td></tr>
+              <tr><td>Đồng bộ ghi chú giữa các thiết bị</td><td>Nội dung ghi chú, UID, dữ liệu tài khoản</td><td>Sự đồng ý của bạn khi đăng nhập</td></tr>
+              <tr><td>Sao lưu và khôi phục ghi chú qua Google Drive</td><td>Nội dung ghi chú, dữ liệu tài khoản Google, quyền <code>drive.file</code></td><td>Sự đồng ý của bạn khi cấp quyền OAuth</td></tr>
+              <tr><td>Xác thực và bảo vệ tài khoản</td><td>Email, UID, token, dữ liệu kỹ thuật</td><td>Thực hiện hợp đồng và lợi ích hợp pháp về bảo mật</td></tr>
+              <tr><td>Phát hiện, ngăn chặn và xử lý sự cố kỹ thuật</td><td>Nhật ký kỹ thuật do Google cung cấp</td><td>Lợi ích hợp pháp về vận hành và bảo mật</td></tr>
+              <tr><td>Tuân thủ nghĩa vụ pháp lý</td><td>Dữ liệu liên quan đến yêu cầu của cơ quan có thẩm quyền</td><td>Nghĩa vụ pháp lý</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Chúng tôi <strong>không</strong> sử dụng dữ liệu của bạn cho mục đích tiếp thị, bán hàng, quảng cáo hoặc huấn luyện mô hình trí tuệ nhân tạo.</p>
+      </section>
+
+      <section id="luu-tru">
+        <h2>4. Lưu trữ và bảo vệ dữ liệu</h2>
+
+        <h3>4.1. Nơi lưu trữ</h3>
+        <ul>
+          <li><strong>Trên thiết bị:</strong> ghi chú và tùy chọn giao diện được lưu cục bộ để ứng dụng hoạt động khi không có mạng.</li>
+          <li><strong>Cloud Firestore:</strong> khi đăng nhập, dữ liệu được lưu trên hạ tầng Google Cloud theo khu vực do cấu hình dự án Firebase quyết định.</li>
+          <li><strong>Google Drive:</strong> bản sao lưu được lưu trong chính tài khoản Google Drive của bạn; chúng tôi không có quyền truy cập vào Drive của bạn ngoài các tệp do ứng dụng tạo.</li>
+        </ul>
+
+        <h3>4.2. Biện pháp bảo vệ</h3>
+        <ul>
+          <li>Dữ liệu truyền giữa ứng dụng và Google được bảo vệ bằng kết nối mã hóa TLS do các SDK chính thức của Google cung cấp.</li>
+          <li>Firebase Authentication quản lý phiên đăng nhập và token.</li>
+          <li>Quy tắc bảo mật Cloud Firestore giới hạn mỗi người dùng chỉ được đọc/ghi dữ liệu của chính mình.</li>
+          <li>Google Drive chỉ được truy cập qua phạm vi <code>drive.file</code>, không phải toàn bộ Drive.</li>
+          <li>Dữ liệu cục bộ nằm trong vùng lưu trữ riêng của ứng dụng do hệ điều hành bảo vệ.</li>
+        </ul>
+        <div class="note"><strong>Về mã hóa:</strong> Ứng dụng không mã hóa riêng nội dung ghi chú ở cấp ứng dụng. Dữ liệu cục bộ dựa vào cơ chế cách ly và bảo vệ của hệ điều hành; dữ liệu trên Firebase và tệp sao lưu trên Google Drive được Google mã hóa khi truyền và khi lưu trữ theo hạ tầng của Google. Tệp sao lưu JSON không được ứng dụng mã hóa thêm, nên bạn cần bảo vệ tài khoản Google của mình.</div>
+        <pre><code>match /users/{userId}/notes/{noteId} {
+  allow read, write: if request.auth != null &amp;&amp; request.auth.uid == userId;
+}</code></pre>
+        <p>Tuy nhiên, không có phương thức bảo mật nào an toàn tuyệt đối. Bạn nên khóa thiết bị bằng mã PIN/mật khẩu hoặc sinh trắc học, bảo vệ tài khoản Google và không chia sẻ thiết bị với người không tin cậy. Nếu ghi chú chứa thông tin nhạy cảm của người khác, bạn cần có sự đồng ý hoặc cơ sở pháp lý phù hợp trước khi nhập.</p>
+      </section>
+
+      <section id="chia-se">
+        <h2>5. Chia sẻ dữ liệu</h2>
+        <p>Chúng tôi không bán, không cho thuê và không trao đổi dữ liệu cá nhân của bạn. Dữ liệu chỉ được chia sẻ trong các trường hợp sau:</p>
+        <ol>
+          <li><strong>Với Google/Firebase:</strong> với tư cách nhà cung cấp hạ tầng xác thực, cơ sở dữ liệu đám mây, đăng nhập Google, Google Drive và Google Fonts. Google xử lý dữ liệu theo <a href="https://policies.google.com/privacy" rel="noopener">Chính sách quyền riêng tư của Google</a> và <a href="https://policies.google.com/terms" rel="noopener">Điều khoản dịch vụ của Google</a>.</li>
+          <li><strong>Theo yêu cầu pháp luật:</strong> khi có yêu cầu hợp lệ từ cơ quan có thẩm quyền, hoặc khi cần thiết để bảo vệ quyền, tài sản, sự an toàn của người dùng, chúng tôi hoặc cộng đồng.</li>
+          <li><strong>Trong trường hợp tái cấu trúc doanh nghiệp:</strong> nếu ứng dụng được chuyển giao, sáp nhập hoặc bán, dữ liệu có thể được chuyển giao kèm theo, với điều kiện bên nhận tiếp tục tuân thủ chính sách này hoặc chính sách tương đương.</li>
+          <li><strong>Với sự đồng ý của bạn:</strong> trong các trường hợp khác, chúng tôi sẽ xin phép bạn trước.</li>
+        </ol>
+
+        <h3>Cam kết Sử dụng Hạn chế đối với Google API</h3>
+        <p>Việc sử dụng và chuyển giao thông tin nhận được từ Google API của T-Note tuân thủ <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Chính sách Dữ liệu Người dùng của Dịch vụ API Google</a>, bao gồm các yêu cầu Sử dụng Hạn chế (Limited Use). Cụ thể:</p>
+        <ul>
+          <li>Dữ liệu Google chỉ được dùng để cung cấp hoặc cải thiện các tính năng hiển thị rõ ràng cho người dùng.</li>
+          <li>Dữ liệu Google không được bán cho bên thứ ba.</li>
+          <li>Dữ liệu Google không được dùng cho quảng cáo, tiếp thị hoặc chấm điểm tín dụng.</li>
+          <li>Con người không đọc dữ liệu Google của bạn, trừ khi bạn cấp quyền rõ ràng cho một trường hợp cụ thể, cần thiết vì lý do bảo mật hoặc pháp lý, hoặc để xử lý sự cố kỹ thuật.</li>
+        </ul>
+      </section>
+
+      <section id="thoi-gian">
+        <h2>6. Thời gian lưu trữ</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Loại dữ liệu</th><th>Thời gian lưu trữ</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Ghi chú trên thiết bị</td><td>Cho đến khi bạn xóa ghi chú, xóa dữ liệu ứng dụng hoặc gỡ cài đặt ứng dụng</td></tr>
+              <tr><td>Ghi chú trong thùng rác</td><td>Cho đến khi bạn xóa vĩnh viễn hoặc dọn sạch thùng rác</td></tr>
+              <tr><td>Ghi chú trên Cloud Firestore</td><td>Cho đến khi bạn xóa ghi chú hoặc tài khoản; sau đó được xóa khỏi hệ thống đang hoạt động trong vòng tối đa 30 ngày, trừ khi pháp luật yêu cầu lưu lâu hơn</td></tr>
+              <tr><td>Bản sao lưu trên Google Drive</td><td>Cho đến khi bạn xóa bản sao lưu hoặc xóa tệp trong Drive; chúng tôi không tự động xóa</td></tr>
+              <tr><td>Thông tin tài khoản Firebase</td><td>Cho đến khi bạn yêu cầu xóa tài khoản; được xử lý trong vòng tối đa 30 ngày, trừ khi pháp luật yêu cầu khác</td></tr>
+              <tr><td>Nhật ký kỹ thuật của Google</td><td>Theo chính sách lưu trữ của Google/Firebase</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><strong>Lưu ý:</strong> Gỡ cài đặt ứng dụng hoặc xóa dữ liệu ứng dụng chỉ xóa dữ liệu cục bộ. Ghi chú đã đồng bộ vẫn có thể còn trên Cloud Firestore và sẽ được tải lại khi bạn đăng nhập lại. Để xóa hoàn toàn, bạn cần xóa ghi chú khi đang đăng nhập hoặc yêu cầu xóa tài khoản.</div>
+      </section>
+
+      <section id="xoa-du-lieu">
+        <h2>7. Xóa dữ liệu và tài khoản</h2>
+
+        <h3>7.1. Xóa ghi chú</h3>
+        <ul>
+          <li>Chuyển ghi chú vào thùng rác trong ứng dụng.</li>
+          <li>Mở Thùng rác và chọn xóa vĩnh viễn từng ghi chú hoặc dọn sạch toàn bộ thùng rác.</li>
+          <li>Khi đang đăng nhập, thao tác xóa sẽ được đồng bộ lên Cloud Firestore.</li>
+        </ul>
+
+        <h3>7.2. Xóa bản sao lưu Google Drive</h3>
+        <ul>
+          <li>Mở <strong>Cài đặt → Sao lưu lên Google Drive</strong>.</li>
+          <li>Chọn bản sao lưu cần xóa và xác nhận xóa.</li>
+          <li>Bạn cũng có thể xóa thư mục <code>T-Note Backups</code> trực tiếp trong Google Drive.</li>
+        </ul>
+
+        <h3>7.3. Xóa tài khoản</h3>
+        <p>Hiện tại, để xóa toàn bộ tài khoản và dữ liệu liên quan, vui lòng gửi email đến <a href="mailto:firstntt90@gmail.com">firstntt90@gmail.com</a> với tiêu đề <strong>"Yêu cầu xóa tài khoản T-Note"</strong>, từ địa chỉ email bạn đã dùng để đăng ký (nếu có). Bạn nên ghi kèm UID hiển thị trong phần Cài đặt tài khoản (nếu có) để việc xác minh nhanh hơn.</p>
+        <p>Chúng tôi sẽ:</p>
+        <ol>
+          <li>Xác minh yêu cầu trong vòng 7 ngày làm việc.</li>
+          <li>Xóa tài khoản Firebase Authentication và dữ liệu ghi chú trên Cloud Firestore.</li>
+          <li>Thông báo cho bạn khi hoàn tất, trong vòng tối đa 30 ngày kể từ khi xác minh thành công.</li>
+        </ol>
+        <p>Các bản sao lưu trên Google Drive nằm trong tài khoản của bạn nên bạn cần tự xóa; nếu không thể, hãy cho chúng tôi biết trong email yêu cầu để được hướng dẫn. Một số nhật ký kỹ thuật do Google lưu giữ có thể tồn tại thêm theo chính sách của Google và nghĩa vụ pháp lý.</p>
+      </section>
+
+      <section id="quyen">
+        <h2>8. Quyền của bạn</h2>
+        <p>Tùy thuộc vào nơi bạn sinh sống, bạn có thể có các quyền sau:</p>
+        <ul>
+          <li><strong>Quyền được biết</strong> dữ liệu nào đang được xử lý và mục đích xử lý.</li>
+          <li><strong>Quyền truy cập và nhận bản sao</strong> dữ liệu cá nhân của bạn.</li>
+          <li><strong>Quyền chỉnh sửa</strong> dữ liệu không chính xác.</li>
+          <li><strong>Quyền xóa</strong> dữ liệu và tài khoản.</li>
+          <li><strong>Quyền rút lại sự đồng ý</strong> bất cứ lúc nào, ví dụ ngắt kết nối Google Drive hoặc đăng xuất.</li>
+          <li><strong>Quyền hạn chế hoặc phản đối</strong> việc xử lý dữ liệu.</li>
+          <li><strong>Quyền khiếu nại</strong> với cơ quan bảo vệ dữ liệu cá nhân có thẩm quyền.</li>
+          <li><strong>Quyền yêu cầu bồi thường thiệt hại</strong> theo quy định pháp luật, nếu có.</li>
+        </ul>
+        <p>Đối với người dùng tại Việt Nam, các quyền này được quy định tại Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và các văn bản hướng dẫn liên quan. Đối với người dùng tại Khu vực Kinh tế Châu Âu (EEA), Vương quốc Anh hoặc Thụy Sĩ, bạn có thêm các quyền theo Quy định Bảo vệ Dữ liệu Chung (GDPR), bao gồm quyền di chuyển dữ liệu và quyền khiếu nại với cơ quan giám sát tại quốc gia bạn cư trú. Đối với người dùng California, chúng tôi không bán dữ liệu cá nhân và bạn có quyền yêu cầu biết, xóa hoặc sửa dữ liệu mà không bị phân biệt đối xử.</p>
+        <p>Để thực hiện quyền của mình, hãy gửi email đến <a href="mailto:firstntt90@gmail.com">firstntt90@gmail.com</a>. Chúng tôi sẽ phản hồi trong vòng 30 ngày hoặc trong thời hạn pháp luật yêu cầu. Chúng tôi có thể cần xác minh danh tính trước khi xử lý yêu cầu để tránh tiết lộ dữ liệu cho người không có quyền.</p>
+      </section>
+
+      <section id="tre-em">
+        <h2>9. Trẻ em</h2>
+        <p>T-Note không hướng tới trẻ em dưới 13 tuổi và chúng tôi không cố ý thu thập dữ liệu cá nhân của trẻ em dưới 13 tuổi. Tại Việt Nam, việc xử lý dữ liệu của người dưới 16 tuổi cần có sự đồng ý của cha, mẹ hoặc người giám hộ hợp pháp. Nếu bạn là cha mẹ hoặc người giám hộ và phát hiện trẻ em đã cung cấp dữ liệu cho T-Note mà không có sự đồng ý hợp lệ, vui lòng liên hệ với chúng tôi để xóa dữ liệu.</p>
+      </section>
+
+      <section id="chuyen-du-lieu">
+        <h2>10. Chuyển dữ liệu ra nước ngoài</h2>
+        <p>Google là nhà cung cấp dịch vụ toàn cầu, nên dữ liệu có thể được lưu trữ và xử lý tại các quốc gia khác nơi Google đặt trung tâm dữ liệu, bao gồm ngoài Việt Nam. Trong phạm vi pháp luật yêu cầu, chúng tôi dựa vào các biện pháp bảo vệ phù hợp của Google, chẳng hạn như điều khoản hợp đồng tiêu chuẩn và các cam kết bảo mật trong sản phẩm của Google.</p>
+      </section>
+
+      <section id="cookie">
+        <h2>11. Cookie và công nghệ tương tự</h2>
+        <p>T-Note là ứng dụng di động/desktop, không phải trang web quảng cáo và không sử dụng cookie để theo dõi bạn. Tuy nhiên, các SDK của Google có thể lưu token xác thực và bộ nhớ đệm cần thiết để duy trì đăng nhập, đồng bộ dữ liệu và hoạt động ngoại tuyến. Các token này được lưu trong vùng bảo vệ của ứng dụng hoặc do hệ điều hành quản lý.</p>
+      </section>
+
+      <section id="ben-thu-ba">
+        <h2>12. Dịch vụ và liên kết bên thứ ba</h2>
+        <p>Ứng dụng sử dụng các dịch vụ của Google. Khi bạn đăng nhập bằng Google hoặc cấp quyền Google Drive, bạn cũng chịu sự điều chỉnh của chính sách và điều khoản của Google:</p>
+        <ul>
+          <li><a href="https://policies.google.com/privacy" rel="noopener">Chính sách quyền riêng tư của Google</a></li>
+          <li><a href="https://policies.google.com/terms" rel="noopener">Điều khoản dịch vụ của Google</a></li>
+          <li><a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Chính sách Dữ liệu Người dùng của Dịch vụ API Google</a></li>
+          <li><a href="https://firebase.google.com/support/privacy" rel="noopener">Chính sách quyền riêng tư của Firebase</a></li>
+        </ul>
+        <p>Chúng tôi không kiểm soát nội dung hoặc chính sách của các trang web bên thứ ba. Bạn nên đọc chính sách của họ trước khi sử dụng dịch vụ.</p>
+      </section>
+
+      <section id="thay-doi">
+        <h2>13. Thay đổi chính sách</h2>
+        <p>Chúng tôi có thể cập nhật chính sách này khi thay đổi tính năng, cách xử lý dữ liệu hoặc yêu cầu pháp lý. Khi cập nhật, chúng tôi sẽ:</p>
+        <ul>
+          <li>Công bố phiên bản mới tại trang chính sách này và trong ứng dụng (nếu có).</li>
+          <li>Cập nhật ngày "Cập nhật lần cuối" ở đầu trang.</li>
+          <li>Thông báo rõ hơn (ví dụ qua ứng dụng hoặc trang cửa hàng ứng dụng) nếu thay đổi ảnh hưởng đáng kể đến quyền của bạn.</li>
+          <li>Xin sự đồng ý mới nếu pháp luật yêu cầu.</li>
+        </ul>
+        <p>Việc bạn tiếp tục sử dụng ứng dụng sau khi chính sách mới có hiệu lực đồng nghĩa với việc bạn chấp nhận chính sách đã cập nhật, trừ khi pháp luật yêu cầu sự đồng ý riêng.</p>
+      </section>
+
+      <section id="lien-he">
+        <h2>14. Liên hệ</h2>
+        <p>Mọi câu hỏi, yêu cầu hoặc khiếu nại về quyền riêng tư, vui lòng liên hệ:</p>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:firstntt90@gmail.com">firstntt90@gmail.com</a></li>
+        </ul>
+        <p>Chúng tôi sẽ cố gắng phản hồi trong vòng 30 ngày kể từ khi nhận được yêu cầu hợp lệ.</p>
+      </section>
+
+      <section id="phu-luc">
+        <h2>15. Phụ lục: Bảng tóm tắt dữ liệu</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Nhóm dữ liệu</th><th>Có thu thập?</th><th>Mục đích</th><th>Chia sẻ với bên thứ ba?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Nội dung ghi chú, checklist, nhãn, màu sắc</td><td>Có, do bạn nhập</td><td>Cung cấp tính năng ghi chú, tìm kiếm, đồng bộ, sao lưu</td><td>Chỉ Google (Firebase/Drive) theo yêu cầu của bạn</td></tr>
+              <tr><td>Email, tên, ảnh đại diện, UID</td><td>Có, khi đăng nhập</td><td>Xác thực, đồng bộ, hiển thị tài khoản</td><td>Google (Firebase Authentication)</td></tr>
+              <tr><td>Mật khẩu</td><td>Không (do Firebase xử lý)</td><td>Xác thực</td><td>Google (Firebase Authentication)</td></tr>
+              <tr><td>Vị trí, danh bạ, camera, micro, ảnh, SMS</td><td>Không</td><td>—</td><td>—</td></tr>
+              <tr><td>Mã quảng cáo, dữ liệu theo dõi</td><td>Không</td><td>—</td><td>—</td></tr>
+              <tr><td>Thông tin thanh toán</td><td>Không</td><td>—</td><td>—</td></tr>
+              <tr><td>Tùy chọn giao diện</td><td>Có, cục bộ</td><td>Ghi nhớ chế độ Sáng/Tối</td><td>Không</td></tr>
+              <tr><td>Nhật ký kỹ thuật</td><td>Do Google xử lý</td><td>Vận hành, bảo mật, xử lý sự cố</td><td>Google</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2026 T-Note. Chính sách này được viết bằng tiếng Việt. Nếu có bản dịch, bản tiếng Việt được ưu tiên áp dụng trong phạm vi pháp luật cho phép.</p>
+      <p><a href="mailto:firstntt90@gmail.com">firstntt90@gmail.com</a></p>
+    </footer>
+  </div>
+</body>
+</html>

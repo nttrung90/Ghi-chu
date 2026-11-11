@@ -28,6 +28,9 @@
 .pub/
 /build/
 
+# Local build artifacts
+/app-release.apk
+
 # Android related
 **/android/.gradle/
 **/android/.kotlin/

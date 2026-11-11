@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
@@ -12,6 +13,9 @@ import 'views/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Khởi tạo dữ liệu locale tiếng Việt cho DateFormat
+  await initializeDateFormatting('vi', null);
 
   // Khởi tạo Firebase (Bọc trong try-catch để app vẫn chạy offline mượt mà nếu chưa cấu hình key)
   try {
@@ -35,19 +39,52 @@ void main() async {
   );
 }
 
-class NoteNTTApp extends StatelessWidget {
+class NoteNTTApp extends StatefulWidget {
   const NoteNTTApp({super.key});
+
+  @override
+  State<NoteNTTApp> createState() => _NoteNTTAppState();
+}
+
+class _NoteNTTAppState extends State<NoteNTTApp> {
+  AuthProvider? _authProvider;
+  NotesProvider? _notesProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _notesProvider = context.read<NotesProvider>();
+
+    final authProvider = context.read<AuthProvider>();
+    if (!identical(_authProvider, authProvider)) {
+      _authProvider?.removeListener(_syncUser);
+      _authProvider = authProvider;
+      _authProvider!.addListener(_syncUser);
+      _syncUser();
+    }
+  }
+
+  /// Đồng bộ User ID sang NotesProvider ngoài thời điểm build,
+  /// tránh lỗi "setState() called during build".
+  void _syncUser() {
+    Future.microtask(() {
+      if (!mounted) return;
+      final auth = _authProvider;
+      _notesProvider?.updateUserId(
+        auth != null && auth.isAuthenticated ? auth.user?.uid : null,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _authProvider?.removeListener(_syncUser);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
-    final authProvider = context.watch<AuthProvider>();
-    final notesProvider = context.read<NotesProvider>();
-
-    // Tự động kết nối User ID của Firebase vào NotesProvider để đồng bộ
-    if (authProvider.isAuthenticated) {
-      notesProvider.updateUserId(authProvider.user?.uid);
-    }
 
     return MaterialApp(
       title: AppStrings.appName,
