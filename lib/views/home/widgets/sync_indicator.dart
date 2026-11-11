@@ -34,12 +34,11 @@ class SyncIndicator extends StatelessWidget {
         color = Colors.orange;
         break;
       case SyncStatus.error:
-        icon = const Icon(Icons.cloud_alert, size: 18, color: Colors.red);
+        icon = const Icon(Icons.sync_problem, size: 18, color: Colors.red);
         tooltip = 'Lỗi đồng bộ';
         color = Colors.red;
         break;
       case SyncStatus.idle:
-      default:
         icon = const Icon(Icons.cloud_queue, size: 18, color: Colors.grey);
         tooltip = 'Sẵn sàng đồng bộ';
         color = Colors.grey;

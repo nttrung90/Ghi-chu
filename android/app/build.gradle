@@ -25,22 +25,24 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.ntt.notentt"
-    compileSdk 34
-    ndkVersion flutter.ndkVersion
+    // Hỗ trợ Android SDK 36 (Android 16)
+    compileSdk 36
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     defaultConfig {
         applicationId "com.ntt.notentt"
-        minSdkVersion 21
-        targetSdkVersion 34
+        // Hỗ trợ Android 8.0 Oreo trở lên (API 26)
+        minSdkVersion 26
+        // Mục tiêu Android 16 (SDK 36)
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -49,6 +51,8 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }
