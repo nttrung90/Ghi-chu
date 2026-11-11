@@ -33,4 +33,11 @@ class AppStrings {
   static const String loginWithGoogle = "Đăng nhập bằng Google";
   static const String loginAnonymous = "Dùng thử không cần tài khoản";
   static const String logout = "Đăng xuất";
+
+  // Google Drive Backup
+  static const String googleDriveBackup = "Sao lưu Google Drive";
+  static const String backupNow = "Sao lưu ngay";
+  static const String restoreBackup = "Khôi phục bản sao lưu";
+  static const String deleteBackup = "Xóa bản sao lưu";
+  static const String backupFolderName = "T-Note Backups";
 }

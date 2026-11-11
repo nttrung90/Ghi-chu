@@ -66,6 +66,48 @@ class _LoginDialogState extends State<LoginDialog> {
               style: TextStyle(fontSize: 13, color: Colors.grey),
             ),
             const SizedBox(height: 16),
+            // Nút đăng nhập Google chính chủ
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.red),
+                label: const Text(
+                  'Tiếp tục với Google',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                onPressed: auth.isLoading
+                    ? null
+                    : () async {
+                        final success = await auth.signInWithGoogle();
+                        if (success && mounted) {
+                          context.read<NotesProvider>().updateUserId(auth.user?.uid);
+                          Navigator.pop(context);
+                        } else if (auth.errorMessage != null && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(auth.errorMessage!)),
+                          );
+                        }
+                      },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Expanded(child: Divider()),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('HOẶC DÙNG EMAIL',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+                const Expanded(child: Divider()),
+              ],
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(

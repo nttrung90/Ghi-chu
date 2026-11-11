@@ -6,6 +6,7 @@ import '../../../providers/notes_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../trash/trash_screen.dart';
 import '../../settings/settings_screen.dart';
+import '../../settings/google_drive_backup_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
@@ -16,6 +17,7 @@ class DrawerMenu extends StatelessWidget {
     final notesProvider = context.watch<NotesProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isDarkMode = themeProvider.isDarkMode;
+    final user = authProvider.user;
 
     return Drawer(
       child: SafeArea(
@@ -52,7 +54,7 @@ class DrawerMenu extends StatelessWidget {
                                 ),
                           ),
                           Text(
-                            'Firebase Cloud Sync',
+                            'Firebase & Drive Sync',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: Colors.grey.shade600,
                                 ),
@@ -68,16 +70,20 @@ class DrawerMenu extends StatelessWidget {
                       CircleAvatar(
                         radius: 14,
                         backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                        child: Icon(
-                          authProvider.isAuthenticated ? Icons.person : Icons.person_outline,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+                        child: user?.photoURL == null
+                            ? Icon(
+                                authProvider.isAuthenticated ? Icons.person : Icons.person_outline,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              )
+                            : null,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          authProvider.user?.email ??
+                          user?.displayName ??
+                              user?.email ??
                               (authProvider.isAnonymous ? "Khách (Anonymous)" : "Chưa đăng nhập"),
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                           overflow: TextOverflow.ellipsis,
@@ -121,6 +127,17 @@ class DrawerMenu extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const TrashScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.add_to_drive, color: Colors.green),
+                    title: const Text('Sao lưu Google Drive'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const GoogleDriveBackupScreen()),
                       );
                     },
                   ),

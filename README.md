@@ -26,10 +26,15 @@
    - **Ghim ghi chú quan trọng (Pin)** luôn hiển thị ở đầu danh sách.
    - **Tìm kiếm tức thời (Instant Search)**: Lọc đồng thời theo tiêu đề, nội dung, đầu việc và nhãn.
    - **Thùng rác (Trash - Soft Delete)**: Khôi phục ghi chú đã xóa hoặc dọn sạch vĩnh viễn.
-3. **Đồng bộ đám mây (Firebase Sync Engine)**:
+3. **Đồng bộ đám mây & Sao lưu cá nhân (Firebase & Google Drive)**:
    - **Offline-First**: Mở ứng dụng là dùng được ngay, ghi chú lưu vào bộ nhớ máy trong 0ms. Khi có kết nối Internet, dữ liệu tự động đẩy lên Firebase.
    - **Đồng bộ thời gian thực hai chiều (Cloud Firestore)**: Bất kỳ thay đổi nào trên Android sẽ lập tức xuất hiện trên iOS hoặc Windows Desktop trong tích tắc.
-   - **Xác thực tài khoản (Firebase Auth)**: Hỗ trợ Đăng nhập Email/Password hoặc Dùng thử dạng Khách (Anonymous).
+   - **Xác thực tài khoản (Firebase Auth)**: Hỗ trợ **Đăng nhập Google (Google Sign-In)**, Email/Password hoặc Dùng thử dạng Khách (Anonymous).
+   - **Sao lưu vào Google Drive cá nhân (Google Drive Backup & Restore)**:
+     - Đóng gói toàn bộ ghi chú (tiêu đề, nội dung, checklist, tag, màu sắc) thành file JSON chuẩn.
+     - Lưu trữ trực tiếp trong thư mục `T-Note Backups` trên Google Drive cá nhân của người dùng.
+     - Bảo mật tuyệt đối với phạm vi quyền `drive.file` (chỉ truy cập file do app tạo, không can thiệp dữ liệu cá nhân khác).
+     - Cho phép xem lịch sử bản sao lưu, khôi phục thông minh (Gộp ghi chú hoặc Ghi đè toàn bộ), và xóa bản sao lưu cũ.
 
 ---
 
@@ -49,22 +54,26 @@ Ghi chu/
     │   ├── theme/             # Cấu hình giao diện Sáng / Tối (Material 3)
     │   └── utils/             # Định dạng ngày giờ, Nhận diện Desktop/Mobile
     ├── models/
-    │   ├── note_model.dart    # Model dữ liệu ghi chú
-    │   └── checklist_item.dart# Model việc cần làm
+    │   ├── note_model.dart             # Model dữ liệu ghi chú
+    │   ├── checklist_item.dart         # Model việc cần làm
+    │   └── drive_backup_metadata.dart  # Thông tin bản sao lưu Google Drive
     ├── services/
-    │   ├── local_storage_service.dart # Lưu trữ cục bộ Offline-First
-    │   ├── firebase_auth_service.dart # Đăng nhập, xác thực Firebase
-    │   └── firestore_sync_service.dart# Luồng đồng bộ Firestore
+    │   ├── local_storage_service.dart  # Lưu trữ cục bộ Offline-First
+    │   ├── firebase_auth_service.dart  # Đăng nhập Firebase & Google Sign-In
+    │   ├── firestore_sync_service.dart # Luồng đồng bộ Firestore
+    │   └── google_drive_service.dart   # Quản lý sao lưu/khôi phục Google Drive
     ├── providers/
-    │   ├── notes_provider.dart # Quản lý trạng thái ghi chú, tìm kiếm, đồng bộ
-    │   ├── auth_provider.dart  # Quản lý tài khoản
-    │   └── theme_provider.dart # Quản lý Dark/Light mode
+    │   ├── notes_provider.dart         # Quản lý trạng thái ghi chú, tìm kiếm, đồng bộ
+    │   ├── auth_provider.dart          # Quản lý tài khoản (Google, Email, Khách)
+    │   ├── backup_provider.dart        # Quản lý sao lưu/khôi phục Drive
+    │   └── theme_provider.dart         # Quản lý Dark/Light mode
     └── views/
-        ├── home/              # Màn hình chính (Responsive Grid & Sidebar)
-        ├── editor/            # Màn hình soạn thảo ghi chú & checklist
-        ├── trash/             # Thùng rác & khôi phục
-        ├── settings/          # Cài đặt giao diện & tài khoản
-        └── auth/              # Hộp thoại đăng nhập
+        ├── home/                       # Màn hình chính (Responsive Grid & Sidebar)
+        ├── editor/                     # Màn hình soạn thảo ghi chú & checklist
+        ├── trash/                      # Thùng rác & khôi phục
+        ├── settings/                   # Cài đặt giao diện, tài khoản & Drive Backup
+        │   └── google_drive_backup_screen.dart # Màn hình quản lý sao lưu Drive
+        └── auth/                       # Hộp thoại đăng nhập (Google, Email)
 ```
 
 ---
@@ -84,11 +93,17 @@ Trong thư mục dự án, chạy lệnh:
 flutter pub get
 ```
 
-### Bước 3: Kết nối dự án Firebase của bạn
+### Bước 3: Kết nối dự án Firebase & Kích hoạt Google Sign-In, Google Drive
 1. Truy cập [Firebase Console](https://console.firebase.google.com/) và tạo một dự án mới (ví dụ đặt tên: `note-ntt-app`).
-2. Bật dịch vụ **Authentication** (chọn phương thức Email/Password và Anonymous).
+2. Bật dịch vụ **Authentication**:
+   - Tab Sign-in method -> Bật **Email/Password**, **Anonymous** (Khách) và **Google**.
+   - Thêm mã vân tay SHA-1 và SHA-256 của máy phát triển vào mục Android App trong Project Settings.
 3. Bật **Cloud Firestore Database** (chọn chế độ Test mode hoặc dán nội dung file `firestore.rules` vào tab Rules).
-4. Cài đặt FlutterFire CLI và liên kết dự án:
+4. Bật **Google Drive API**:
+   - Truy cập [Google Cloud Console](https://console.cloud.google.com/) cùng dự án Firebase trên.
+   - Tìm kiếm và kích hoạt **Google Drive API**.
+   - Vào OAuth Consent Screen, khai báo scope `https://www.googleapis.com/auth/drive.file`.
+5. Cài đặt FlutterFire CLI và liên kết dự án:
    ```bash
    dart pub global activate flutterfire_cli
    flutterfire configure

@@ -7,6 +7,7 @@ import 'core/constants/app_strings.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/notes_provider.dart';
+import 'providers/backup_provider.dart';
 import 'views/home/home_screen.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => NotesProvider()),
+        ChangeNotifierProvider(create: (_) => BackupProvider()),
       ],
       child: const NoteNTTApp(),
     ),

@@ -239,6 +239,41 @@ class NotesProvider extends ChangeNotifier {
     }
   }
 
+  /// Khôi phục ghi chú từ bản sao lưu (Google Drive)
+  /// - Nếu [overwrite] == true: Thay thế toàn bộ danh sách ghi chú
+  /// - Nếu [overwrite] == false: Gộp thông minh (giữ lại bản ghi có updatedAt mới hơn)
+  Future<void> restoreNotesFromBackup(List<NoteModel> backupNotes, {bool overwrite = false}) async {
+    if (overwrite) {
+      _notes = List.from(backupNotes);
+    } else {
+      final Map<String, NoteModel> map = {for (var n in _notes) n.id: n};
+      for (final bNote in backupNotes) {
+        if (!map.containsKey(bNote.id)) {
+          map[bNote.id] = bNote;
+        } else {
+          final current = map[bNote.id]!;
+          if (bNote.updatedAt.isAfter(current.updatedAt)) {
+            map[bNote.id] = bNote;
+          }
+        }
+      }
+      _notes = map.values.toList();
+    }
+
+    _notes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    notifyListeners();
+
+    // Lưu vào bộ nhớ máy Offline-first
+    await _localStorage.saveNotes(_notes);
+
+    // Đồng bộ lên Firebase Firestore nếu đang đăng nhập
+    if (_currentUserId != null) {
+      try {
+        await _firestoreSync.syncBatch(_currentUserId!, _notes);
+      } catch (_) {}
+    }
+  }
+
   @override
   void dispose() {
     _firestoreSubscription?.cancel();
