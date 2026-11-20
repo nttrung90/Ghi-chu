@@ -24,7 +24,9 @@ class LocalStorageService {
     }
 
     try {
-      return notesJsonList.map((jsonStr) => NoteModel.fromJson(jsonStr)).toList();
+      return notesJsonList
+          .map((jsonStr) => NoteModel.fromJson(jsonStr))
+          .toList();
     } catch (e) {
       return [];
     }

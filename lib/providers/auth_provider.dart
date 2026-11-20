@@ -20,7 +20,8 @@ class AuthProvider extends ChangeNotifier {
   GoogleSignIn get googleSignIn => _authService.googleSignIn;
   bool get isGoogleSignedIn =>
       _authService.currentGoogleUser != null ||
-      (_user != null && _user!.providerData.any((p) => p.providerId == 'google.com'));
+      (_user != null &&
+          _user!.providerData.any((p) => p.providerId == 'google.com'));
 
   AuthProvider() {
     _init();

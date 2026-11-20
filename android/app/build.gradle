@@ -80,8 +80,18 @@ android {
     buildTypes {
         release {
             signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
-            minifyEnabled false
-            shrinkResources false
+            // Bật R8 để Play Console không cảnh báo DEX chưa được tối ưu/obfuscate.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    packaging {
+        jniLibs {
+            // Giữ thư viện native không nén để Android có thể ánh xạ trực tiếp,
+            // đồng thời cho phép AGP canh lề 16 KB cho các thiết bị page-size 16 KB.
+            useLegacyPackaging = false
         }
     }
 }

@@ -1,5 +1,6 @@
 class AppStrings {
   static const String appName = "T-Note";
+  static const String appVersionLabel = "Phiên bản 0.2.0+2 (Build 2)";
   static const String searchNotesHint = "Tìm kiếm ghi chú, nhãn...";
   static const String allNotes = "Tất cả ghi chú";
   static const String pinnedNotes = "Đã ghim";
@@ -7,10 +8,18 @@ class AppStrings {
   static const String archive = "Lưu trữ";
   static const String trash = "Thùng rác";
   static const String settings = "Cài đặt";
-  static const String emptyNotes = "Chưa có ghi chú nào.\nNhấn dấu '+' để tạo ngay!";
+  static const String emptyNotes =
+      "Chưa có ghi chú nào.\nNhấn dấu '+' để tạo ngay!";
   static const String emptyTrash = "Thùng rác trống";
   static const String emptySearch = "Không tìm thấy ghi chú nào phù hợp";
-  
+  static const String notes = "Ghi chú";
+  static const String tasks = "Nhiệm vụ";
+  static const String allFilter = "Tất cả";
+  static const String uncategorized = "Chưa phân loại";
+  static const String emptyTasks =
+      "Chưa có nhiệm vụ nào.\nThêm việc cần làm trong một ghi chú để bắt đầu.";
+  static const String noteTitle = "Ghi chú";
+
   // Editor
   static const String titleHint = "Tiêu đề...";
   static const String contentHint = "Nhập nội dung ghi chú ở đây...";

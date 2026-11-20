@@ -6,15 +6,14 @@ class FirestoreSyncService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Lấy Collection Reference cho người dùng cụ thể
-  CollectionReference<Map<String, dynamic>> _userNotesCollection(String userId) {
+  CollectionReference<Map<String, dynamic>> _userNotesCollection(
+      String userId) {
     return _firestore.collection('users').doc(userId).collection('notes');
   }
 
   /// Lắng nghe luồng dữ liệu thời gian thực từ Firestore (Realtime Stream)
   Stream<List<NoteModel>> streamNotes(String userId) {
-    return _userNotesCollection(userId)
-        .snapshots()
-        .map((snapshot) {
+    return _userNotesCollection(userId).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id; // Đảm bảo ID đồng nhất

@@ -46,7 +46,8 @@ class _LoginDialogState extends State<LoginDialog> {
       Navigator.pop(context);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Thất bại, vui lòng thử lại')),
+        SnackBar(
+            content: Text(auth.errorMessage ?? 'Thất bại, vui lòng thử lại')),
       );
     }
   }
@@ -56,7 +57,9 @@ class _LoginDialogState extends State<LoginDialog> {
     final auth = context.watch<AuthProvider>();
 
     return AlertDialog(
-      title: Text(_isSignUp ? 'Đăng ký tài khoản ${AppStrings.appName}' : 'Đăng nhập ${AppStrings.appName}'),
+      title: Text(_isSignUp
+          ? 'Đăng ký tài khoản ${AppStrings.appName}'
+          : 'Đăng nhập ${AppStrings.appName}'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -71,11 +74,14 @@ class _LoginDialogState extends State<LoginDialog> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   side: BorderSide(color: Colors.grey.shade300),
                 ),
-                icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.red),
+                icon:
+                    const Icon(Icons.g_mobiledata, size: 28, color: Colors.red),
                 label: const Text(
                   'Tiếp tục với Google',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -106,7 +112,10 @@ class _LoginDialogState extends State<LoginDialog> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text('HOẶC DÙNG EMAIL',
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold)),
                 ),
                 const Expanded(child: Divider()),
               ],
@@ -137,7 +146,9 @@ class _LoginDialogState extends State<LoginDialog> {
                 setState(() => _isSignUp = !_isSignUp);
               },
               child: Text(
-                _isSignUp ? 'Đã có tài khoản? Đăng nhập ngay' : 'Chưa có tài khoản? Đăng ký',
+                _isSignUp
+                    ? 'Đã có tài khoản? Đăng nhập ngay'
+                    : 'Chưa có tài khoản? Đăng ký',
               ),
             ),
             const Divider(),

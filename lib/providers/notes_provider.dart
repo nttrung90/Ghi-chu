@@ -13,6 +13,7 @@ class NotesProvider extends ChangeNotifier {
   List<NoteModel> _notes = [];
   String _searchQuery = '';
   String? _selectedTag;
+  bool _showUncategorized = false;
   SyncStatus _syncStatus = SyncStatus.idle;
   String? _currentUserId;
   StreamSubscription<List<NoteModel>>? _firestoreSubscription;
@@ -21,6 +22,7 @@ class NotesProvider extends ChangeNotifier {
   SyncStatus get syncStatus => _syncStatus;
   String get searchQuery => _searchQuery;
   String? get selectedTag => _selectedTag;
+  bool get showUncategorized => _showUncategorized;
 
   NotesProvider() {
     _init();
@@ -97,6 +99,25 @@ class NotesProvider extends ChangeNotifier {
 
   void setSelectedTag(String? tag) {
     _selectedTag = tag;
+    if (tag != null) {
+      _showUncategorized = false;
+    }
+    notifyListeners();
+  }
+
+  /// Bỏ mọi bộ lọc danh mục và quay về danh sách tất cả ghi chú.
+  void showAllNotes() {
+    _selectedTag = null;
+    _showUncategorized = false;
+    notifyListeners();
+  }
+
+  /// Chỉ hiển thị các ghi chú chưa được gắn nhãn.
+  void setUncategorizedOnly(bool value) {
+    _showUncategorized = value;
+    if (value) {
+      _selectedTag = null;
+    }
     notifyListeners();
   }
 
@@ -111,23 +132,66 @@ class NotesProvider extends ChangeNotifier {
     return tags;
   }
 
+  /// Có ghi chú nào chưa được gắn nhãn hay không.
+  bool get hasUncategorizedNotes => _notes.any(
+        (note) => !note.isDeleted && !note.isArchived && note.tags.isEmpty,
+      );
+
+  /// Các ghi chú đang hoạt động, chưa bị xóa và chưa lưu trữ.
+  List<NoteModel> get activeNotes =>
+      _notes.where((note) => !note.isDeleted && !note.isArchived).toList();
+
+  /// Các ghi chú đang hoạt động và khớp với từ khóa tìm kiếm (không lọc nhãn).
+  List<NoteModel> get searchFilteredActiveNotes =>
+      activeNotes.where(_matchesSearch).toList();
+
+  bool _matchesSearch(NoteModel note) {
+    if (_searchQuery.isEmpty) return true;
+
+    final matchesTitle = note.title.toLowerCase().contains(_searchQuery);
+    final matchesContent = note.content.toLowerCase().contains(_searchQuery);
+    final matchesTag =
+        note.tags.any((tag) => tag.toLowerCase().contains(_searchQuery));
+    final matchesChecklist = note.checklist
+        .any((item) => item.text.toLowerCase().contains(_searchQuery));
+
+    return matchesTitle || matchesContent || matchesTag || matchesChecklist;
+  }
+
+  /// Số lượng ghi chú đang hoạt động.
+  int get activeNotesCount => activeNotes.length;
+
+  /// Tổng số đầu việc trong tất cả ghi chú đang hoạt động.
+  int get totalChecklistItems => activeNotes.fold(
+        0,
+        (total, note) => total + note.checklist.length,
+      );
+
+  /// Số đầu việc chưa hoàn thành trong tất cả ghi chú đang hoạt động.
+  int get pendingChecklistItems => activeNotes.fold(
+        0,
+        (total, note) =>
+            total + note.checklist.where((item) => !item.isDone).length,
+      );
+
   /// Các ghi chú đang hoạt động (không bị xóa, không bị lưu trữ) sau khi lọc
   List<NoteModel> get filteredActiveNotes {
     return _notes.where((note) {
       if (note.isDeleted || note.isArchived) return false;
 
-      // Lọc theo tag
+      // Lọc theo nhãn
       if (_selectedTag != null && !note.tags.contains(_selectedTag)) {
         return false;
       }
 
+      // Lọc ghi chú chưa phân loại
+      if (_showUncategorized && note.tags.isNotEmpty) {
+        return false;
+      }
+
       // Lọc theo từ khóa tìm kiếm
-      if (_searchQuery.isNotEmpty) {
-        final matchesTitle = note.title.toLowerCase().contains(_searchQuery);
-        final matchesContent = note.content.toLowerCase().contains(_searchQuery);
-        final matchesTag = note.tags.any((t) => t.toLowerCase().contains(_searchQuery));
-        final matchesChecklist = note.checklist.any((item) => item.text.toLowerCase().contains(_searchQuery));
-        return matchesTitle || matchesContent || matchesTag || matchesChecklist;
+      if (!_matchesSearch(note)) {
+        return false;
       }
 
       return true;
@@ -192,6 +256,22 @@ class NotesProvider extends ChangeNotifier {
     }
   }
 
+  /// Đánh dấu hoàn thành / chưa hoàn thành một đầu việc trong ghi chú.
+  Future<void> toggleChecklistItem(String noteId, String itemId) async {
+    final index = _notes.indexWhere((n) => n.id == noteId);
+    if (index < 0) return;
+
+    final note = _notes[index];
+    final updatedChecklist = note.checklist
+        .map(
+          (item) =>
+              item.id == itemId ? item.copyWith(isDone: !item.isDone) : item,
+        )
+        .toList();
+
+    await saveNote(note.copyWith(checklist: updatedChecklist));
+  }
+
   /// Chuyển ghi chú vào thùng rác (Soft Delete)
   Future<void> moveToTrash(String noteId) async {
     final index = _notes.indexWhere((n) => n.id == noteId);
@@ -242,7 +322,8 @@ class NotesProvider extends ChangeNotifier {
   /// Khôi phục ghi chú từ bản sao lưu (Google Drive)
   /// - Nếu [overwrite] == true: Thay thế toàn bộ danh sách ghi chú
   /// - Nếu [overwrite] == false: Gộp thông minh (giữ lại bản ghi có updatedAt mới hơn)
-  Future<void> restoreNotesFromBackup(List<NoteModel> backupNotes, {bool overwrite = false}) async {
+  Future<void> restoreNotesFromBackup(List<NoteModel> backupNotes,
+      {bool overwrite = false}) async {
     if (overwrite) {
       _notes = List.from(backupNotes);
     } else {

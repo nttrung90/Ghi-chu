@@ -19,7 +19,8 @@ class TrashScreen extends StatelessWidget {
           if (trashNotes.isNotEmpty)
             TextButton.icon(
               icon: const Icon(Icons.delete_forever, color: Colors.red),
-              label: const Text('Dọn sạch', style: TextStyle(color: Colors.red)),
+              label:
+                  const Text('Dọn sạch', style: TextStyle(color: Colors.red)),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -34,7 +35,8 @@ class TrashScreen extends StatelessWidget {
                         onPressed: () => Navigator.pop(ctx),
                       ),
                       TextButton(
-                        child: const Text('Xóa tất cả', style: TextStyle(color: Colors.red)),
+                        child: const Text('Xóa tất cả',
+                            style: TextStyle(color: Colors.red)),
                         onPressed: () {
                           notesProvider.emptyTrash();
                           Navigator.pop(ctx);
@@ -54,7 +56,8 @@ class TrashScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.delete_outline, size: 64, color: Colors.grey),
                   SizedBox(height: 12),
-                  Text(AppStrings.emptyTrash, style: TextStyle(color: Colors.grey, fontSize: 16)),
+                  Text(AppStrings.emptyTrash,
+                      style: TextStyle(color: Colors.grey, fontSize: 16)),
                 ],
               ),
             )
@@ -75,7 +78,8 @@ class TrashScreen extends StatelessWidget {
                     color: Colors.red,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.delete_forever, color: Colors.white),
+                    child:
+                        const Icon(Icons.delete_forever, color: Colors.white),
                   ),
                   onDismissed: (direction) {
                     if (direction == DismissDirection.startToEnd) {
@@ -90,12 +94,15 @@ class TrashScreen extends StatelessWidget {
                       );
                     }
                   },
-                  child: NoteCard(
-                    note: note,
-                    onTap: () {
-                      _showActionSheet(context, notesProvider, note.id);
-                    },
-                    onTogglePin: () {},
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: NoteCard(
+                      note: note,
+                      onTap: () {
+                        _showActionSheet(context, notesProvider, note.id);
+                      },
+                      onTogglePin: () {},
+                    ),
                   ),
                 );
               },
@@ -103,7 +110,8 @@ class TrashScreen extends StatelessWidget {
     );
   }
 
-  void _showActionSheet(BuildContext context, NotesProvider provider, String noteId) {
+  void _showActionSheet(
+      BuildContext context, NotesProvider provider, String noteId) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(

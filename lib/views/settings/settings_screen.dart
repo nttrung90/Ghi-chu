@@ -1,15 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../providers/app_update_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/backup_provider.dart';
 import '../../../providers/notes_provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../services/app_update_service.dart';
 import '../auth/login_dialog.dart';
 import 'google_drive_backup_screen.dart';
+import 'widgets/app_update_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _checkForUpdates(
+    BuildContext context,
+    AppUpdateProvider update,
+  ) async {
+    final result = await update.checkForUpdate();
+    if (!context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    switch (result.status) {
+      case AppUpdateCheckStatus.updateAvailable:
+        if (result.info != null) {
+          await showAppUpdateDialog(
+            context: context,
+            provider: update,
+            info: result.info!,
+          );
+        }
+        break;
+      case AppUpdateCheckStatus.upToDate:
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Bạn đang dùng phiên bản mới nhất.')),
+        );
+        break;
+      case AppUpdateCheckStatus.inProgress:
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Bản cập nhật đang được tải về. Vui lòng chờ trong giây lát.',
+            ),
+          ),
+        );
+        break;
+      case AppUpdateCheckStatus.unsupported:
+      case AppUpdateCheckStatus.error:
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              result.errorMessage ?? 'Không thể kiểm tra cập nhật lúc này.',
+            ),
+          ),
+        );
+        break;
+      case AppUpdateCheckStatus.busy:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +68,7 @@ class SettingsScreen extends StatelessWidget {
     final notes = context.watch<NotesProvider>();
     final theme = context.watch<ThemeProvider>();
     final backup = context.watch<BackupProvider>();
+    final update = context.watch<AppUpdateProvider>();
 
     final user = auth.user;
     final googleUser = auth.googleUser;
@@ -27,6 +79,9 @@ class SettingsScreen extends StatelessWidget {
         title: const Text(AppStrings.settings),
       ),
       body: ListView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           // Mục tài khoản & Firebase Cloud
           const ListTile(
@@ -35,8 +90,10 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-              backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+              backgroundColor:
+                  Theme.of(context).primaryColor.withValues(alpha: 0.2),
+              backgroundImage:
+                  user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
               child: user?.photoURL == null
                   ? Icon(
                       auth.isAuthenticated ? Icons.cloud_done : Icons.cloud_off,
@@ -49,7 +106,9 @@ class SettingsScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     auth.isAuthenticated
-                        ? (user?.displayName ?? user?.email ?? 'Chế độ Khách (Anonymous)')
+                        ? (user?.displayName ??
+                            user?.email ??
+                            'Chế độ Khách (Anonymous)')
                         : 'Chưa kết nối tài khoản Firebase',
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
@@ -57,12 +116,17 @@ class SettingsScreen extends StatelessWidget {
                 if (isGoogle)
                   Container(
                     margin: const EdgeInsets.only(left: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text('Google', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                    child: const Text('Google',
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold)),
                   ),
               ],
             ),
@@ -111,7 +175,8 @@ class SettingsScreen extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const GoogleDriveBackupScreen()),
+                MaterialPageRoute(
+                    builder: (_) => const GoogleDriveBackupScreen()),
               );
             },
           ),
@@ -120,7 +185,8 @@ class SettingsScreen extends StatelessWidget {
 
           // Mục Giao diện
           const ListTile(
-            title: Text('Giao diện', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            title: Text('Giao diện',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           RadioGroup<ThemeMode>(
             groupValue: theme.themeMode,
@@ -147,19 +213,50 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(),
 
+          // Kiểm tra cập nhật qua Google Play
+          ListTile(
+            leading: Icon(
+              update.status == AppUpdateStatus.updateAvailable
+                  ? Icons.system_update_alt_rounded
+                  : Icons.update_rounded,
+              color: update.status == AppUpdateStatus.updateAvailable
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
+            ),
+            title: const Text('Kiểm tra cập nhật'),
+            subtitle: Text(update.statusLabel),
+            trailing: update.isBusy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    update.status == AppUpdateStatus.updateAvailable
+                        ? Icons.download_rounded
+                        : Icons.chevron_right,
+                  ),
+            onTap:
+                update.isBusy ? null : () => _checkForUpdates(context, update),
+          ),
+
+          const Divider(),
+
           // Mục Thông tin ứng dụng
           const ListTile(
-            title: Text('Thông tin ứng dụng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            title: Text('Thông tin ứng dụng',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text(AppStrings.appName),
-            subtitle: Text('Phiên bản 0.1.0+1 (Build 1)'),
+            subtitle: Text(AppStrings.appVersionLabel),
           ),
           const ListTile(
             leading: Icon(Icons.offline_bolt_outlined),
             title: Text('Kiến trúc Offline-First'),
-            subtitle: Text('Ghi chú hoạt động ngay lập tức không cần mạng, tự động đồng bộ khi có kết nối.'),
+            subtitle: Text(
+                'Ghi chú hoạt động ngay lập tức không cần mạng, tự động đồng bộ khi có kết nối.'),
           ),
         ],
       ),

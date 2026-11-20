@@ -1,178 +1,230 @@
 import 'package:flutter/material.dart';
-import '../../../models/note_model.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../models/note_model.dart';
 
 class NoteCard extends StatelessWidget {
   final NoteModel note;
   final VoidCallback onTap;
   final VoidCallback onTogglePin;
+  final VoidCallback? onLongPress;
 
   const NoteCard({
     super.key,
     required this.note,
     required this.onTap,
     required this.onTogglePin,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = Color(note.colorValue);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
 
-    // Tính toán độ tương phản chữ nếu nền sáng/tối
-    final isCardWhite = cardColor.toARGB32() == 0xFFFFFFFF;
-    final backgroundColor = isCardWhite
-        ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
-        : cardColor;
+    final noteColor = Color(note.colorValue);
+    final isDefaultColor = note.colorValue == 0xFFFFFFFF;
 
-    final textColor = isDarkMode && isCardWhite ? Colors.white : Colors.black87;
+    // Thẻ mặc định dùng màu bề mặt của theme. Các màu pastel được làm tối
+    // trong chế độ tối để vẫn giữ được độ tương phản với chữ trắng.
+    final backgroundColor = isDefaultColor
+        ? theme.cardColor
+        : (isDark
+            ? Color.alphaBlend(
+                Colors.black.withValues(alpha: 0.64),
+                noteColor,
+              )
+            : noteColor);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+    final titleColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final bodyColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final dateColor =
+        isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
+
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: isDark
+          ? BorderSide(
+              color: Colors.white.withValues(alpha: 0.035),
+              width: 0.8,
+            )
+          : BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.9),
+              width: 0.8,
+            ),
+    );
+
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDarkMode ? Colors.white12 : Colors.grey.shade300,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        color: backgroundColor,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Padding(
-            padding: const EdgeInsets.all(14.0),
+            padding: const EdgeInsets.fromLTRB(16, 15, 16, 13),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hàng tiêu đề & nút Ghim
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        note.title.isNotEmpty ? note.title : 'Không có tiêu đề',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: note.title.isNotEmpty ? textColor : Colors.grey,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      iconSize: 20,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: Icon(
-                        note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                        color: note.isPinned ? Theme.of(context).colorScheme.primary : Colors.grey,
-                      ),
-                      onPressed: onTogglePin,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Nội dung văn bản
-                if (note.content.isNotEmpty)
+                if (note.title.trim().isNotEmpty)
                   Text(
-                    note.content,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: textColor.withValues(alpha: 0.8),
-                      height: 1.35,
-                    ),
-                    maxLines: 6,
+                    note.title.trim(),
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 18,
+                      height: 1.25,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                      color: titleColor,
+                    ),
                   ),
 
-                // Xem trước Checklist việc cần làm
+                if (note.title.trim().isNotEmpty &&
+                    (note.content.trim().isNotEmpty ||
+                        note.checklist.isNotEmpty))
+                  const SizedBox(height: 9),
+
+                if (note.content.trim().isNotEmpty)
+                  Text(
+                    note.content.trim(),
+                    maxLines: 8,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      height: 1.45,
+                      color: bodyColor,
+                    ),
+                  ),
+
+                // Xem trước danh sách việc cần làm
                 if (note.checklist.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  ...note.checklist.take(3).map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0),
-                      child: Row(
-                        children: [
-                          Icon(
-                            item.isDone ? Icons.check_box : Icons.check_box_outline_blank,
-                            size: 16,
-                            color: item.isDone ? Colors.green : Colors.grey,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              item.text,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: item.isDone ? Colors.grey : textColor,
-                                decoration: item.isDone ? TextDecoration.lineThrough : null,
+                  if (note.content.trim().isNotEmpty)
+                    const SizedBox(height: 10),
+                  ...note.checklist.take(3).map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1),
+                                child: Icon(
+                                  item.isDone
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded,
+                                  size: 16,
+                                  color: item.isDone
+                                      ? theme.colorScheme.primary
+                                      : dateColor,
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  item.text,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    height: 1.35,
+                                    color: item.isDone ? dateColor : bodyColor,
+                                    decoration: item.isDone
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    );
-                  }),
                   if (note.checklist.length > 3)
                     Text(
-                      '+ ${note.checklist.length - 3} việc khác...',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      '+ ${note.checklist.length - 3} việc khác',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: dateColor,
+                      ),
                     ),
                 ],
 
-                // Thẻ nhãn (Tags)
+                // Nhãn của ghi chú
                 if (note.tags.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Wrap(
-                    spacing: 4,
-                    runSpacing: 4,
+                    spacing: 5,
+                    runSpacing: 5,
                     children: note.tags.map((tag) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(10),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.055)
+                              : Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                         child: Text(
                           '#$tag',
-                          style: TextStyle(fontSize: 11, color: textColor.withValues(alpha: 0.7)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: bodyColor,
+                          ),
                         ),
                       );
                     }).toList(),
                   ),
                 ],
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
 
-                // Thời gian cập nhật & Icon đồng bộ
+                // Ngày cập nhật & biểu tượng ghim
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      DateFormatter.formatFriendly(note.updatedAt),
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                    Expanded(
+                      child: Text(
+                        DateFormatter.formatNoteCardDate(note.updatedAt),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: dateColor,
+                        ),
+                      ),
                     ),
-                    Icon(
-                      note.isSynced ? Icons.cloud_done_outlined : Icons.cloud_queue_outlined,
-                      size: 14,
-                      color: note.isSynced ? Colors.green.shade400 : Colors.grey,
-                    ),
+                    if (note.isPinned)
+                      GestureDetector(
+                        onTap: onTogglePin,
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: Icon(
+                            Icons.push_pin_rounded,
+                            size: 15,
+                            color: dateColor,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ],

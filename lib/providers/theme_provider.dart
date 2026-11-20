@@ -3,10 +3,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   static const String _themePrefKey = 'note_ntt_theme_mode';
-  ThemeMode _themeMode = ThemeMode.system;
+
+  // Giao diện tối là mặc định để đồng nhất với thiết kế ban đầu.
+  ThemeMode _themeMode = ThemeMode.dark;
 
   ThemeMode get themeMode => _themeMode;
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+
+  bool get isDarkMode {
+    if (_themeMode == ThemeMode.system) {
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
+    }
+    return _themeMode == ThemeMode.dark;
+  }
 
   ThemeProvider() {
     _loadTheme();
@@ -19,8 +28,10 @@ class ThemeProvider extends ChangeNotifier {
       _themeMode = ThemeMode.dark;
     } else if (savedMode == 'light') {
       _themeMode = ThemeMode.light;
-    } else {
+    } else if (savedMode == 'system') {
       _themeMode = ThemeMode.system;
+    } else {
+      _themeMode = ThemeMode.dark;
     }
     notifyListeners();
   }
@@ -33,13 +44,13 @@ class ThemeProvider extends ChangeNotifier {
       await prefs.setString(_themePrefKey, 'dark');
     } else if (mode == ThemeMode.light) {
       await prefs.setString(_themePrefKey, 'light');
-    } else {
-      await prefs.remove(_themePrefKey);
+    } else if (mode == ThemeMode.system) {
+      await prefs.setString(_themePrefKey, 'system');
     }
   }
 
   void toggleTheme() {
-    if (_themeMode == ThemeMode.dark) {
+    if (isDarkMode) {
       setThemeMode(ThemeMode.light);
     } else {
       setThemeMode(ThemeMode.dark);

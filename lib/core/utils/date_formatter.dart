@@ -12,12 +12,18 @@ class DateFormatter {
       return '${difference.inMinutes} phút trước';
     } else if (difference.inHours < 24 && date.day == now.day) {
       return DateFormat('HH:mm').format(date);
-    } else if (difference.inDays == 1 || (difference.inHours < 48 && date.day == now.day - 1)) {
+    } else if (difference.inDays == 1 ||
+        (difference.inHours < 48 && date.day == now.day - 1)) {
       return 'Hôm qua ${DateFormat('HH:mm').format(date)}';
     } else if (date.year == now.year) {
       return DateFormat('d MMM, HH:mm', 'vi').format(date);
     } else {
       return DateFormat('dd/MM/yyyy').format(date);
     }
+  }
+
+  /// Định dạng ngày hiển thị trên thẻ ghi chú, ví dụ: "16 Tháng 11, 2025"
+  static String formatNoteCardDate(DateTime date) {
+    return '${date.day} Tháng ${date.month}, ${date.year}';
   }
 }

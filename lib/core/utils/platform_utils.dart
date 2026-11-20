@@ -17,11 +17,16 @@ class PlatformUtils {
     return MediaQuery.of(context).size.width >= 720;
   }
 
-  static int getGridColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    if (width >= 1200) return 4;
-    if (width >= 800) return 3;
-    if (width >= 500) return 2;
+  /// Số cột lưới ghi chú dựa trên chiều rộng thực tế của vùng nội dung.
+  static int getGridColumnCountForWidth(double width) {
+    if (width >= 1500) return 5;
+    if (width >= 1100) return 4;
+    if (width >= 760) return 3;
+    if (width >= 320) return 2;
     return 1;
+  }
+
+  static int getGridColumnCount(BuildContext context) {
+    return getGridColumnCountForWidth(MediaQuery.of(context).size.width);
   }
 }

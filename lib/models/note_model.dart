@@ -83,21 +83,27 @@ class NoteModel {
       title: map['title'] ?? '',
       content: map['content'] ?? '',
       checklist: (map['checklist'] as List<dynamic>?)
-              ?.map((item) => ChecklistItem.fromMap(Map<String, dynamic>.from(item)))
+              ?.map((item) =>
+                  ChecklistItem.fromMap(Map<String, dynamic>.from(item)))
               .toList() ??
           [],
-      tags: (map['tags'] as List<dynamic>?)?.map((t) => t.toString()).toList() ?? [],
+      tags:
+          (map['tags'] as List<dynamic>?)?.map((t) => t.toString()).toList() ??
+              [],
       colorValue: map['colorValue'] ?? 0xFFFFFFFF,
       isPinned: map['isPinned'] ?? false,
       isArchived: map['isArchived'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] ?? DateTime.now().millisecondsSinceEpoch),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+          map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(
+          map['updatedAt'] ?? DateTime.now().millisecondsSinceEpoch),
       isSynced: true,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory NoteModel.fromJson(String source) => NoteModel.fromMap(json.decode(source));
+  factory NoteModel.fromJson(String source) =>
+      NoteModel.fromMap(json.decode(source));
 }

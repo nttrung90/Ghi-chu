@@ -72,7 +72,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     final content = _contentController.text.trim();
 
     // Nếu không có nội dung, tiêu đề, checklist gì thì không lưu
-    if (title.isEmpty && content.isEmpty && _checklist.isEmpty && widget.initialNote == null) {
+    if (title.isEmpty &&
+        content.isEmpty &&
+        _checklist.isEmpty &&
+        widget.initialNote == null) {
       return;
     }
 
@@ -122,11 +125,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final palette = isDarkMode ? AppColors.noteColorsDark : AppColors.noteColorsLight;
-    final backgroundColor = _colorValue == 0xFFFFFFFF
-        ? (isDarkMode ? const Color(0xFF121212) : Colors.white)
-        : Color(_colorValue);
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final palette =
+        isDarkMode ? AppColors.noteColorsDark : AppColors.noteColorsLight;
+    final isDefaultColor = _colorValue == 0xFFFFFFFF;
+    final backgroundColor = isDefaultColor
+        ? theme.scaffoldBackgroundColor
+        : (isDarkMode
+            ? Color.alphaBlend(
+                Colors.black.withValues(alpha: 0.58),
+                Color(_colorValue),
+              )
+            : Color(_colorValue));
 
     return CallbackShortcuts(
       bindings: {
@@ -134,7 +145,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
           _saveNote();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã lưu ghi chú!'), duration: Duration(seconds: 1)),
+            const SnackBar(
+                content: Text('Đã lưu ghi chú!'),
+                duration: Duration(seconds: 1)),
           );
         },
       },
@@ -152,7 +165,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             actions: [
               IconButton(
                 tooltip: _isPinned ? AppStrings.unpin : AppStrings.pin,
-                icon: Icon(_isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+                icon:
+                    Icon(_isPinned ? Icons.push_pin : Icons.push_pin_outlined),
                 onPressed: () {
                   setState(() {
                     _isPinned = !_isPinned;
@@ -186,15 +200,18 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   children: [
                     // Tiêu đề ghi chú
                     TextField(
                       controller: _titleController,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
                       decoration: const InputDecoration(
                         hintText: AppStrings.titleHint,
                         border: InputBorder.none,
+                        filled: false,
                       ),
                       maxLines: null,
                     ),
@@ -207,6 +224,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       decoration: const InputDecoration(
                         hintText: AppStrings.contentHint,
                         border: InputBorder.none,
+                        filled: false,
                       ),
                       maxLines: null,
                     ),
@@ -218,7 +236,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       const Divider(),
                       const Text(
                         'Danh sách việc cần làm',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
                       ..._checklist.asMap().entries.map((entry) {
@@ -239,13 +258,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                               child: Text(
                                 item.text,
                                 style: TextStyle(
-                                  decoration: item.isDone ? TextDecoration.lineThrough : null,
+                                  decoration: item.isDone
+                                      ? TextDecoration.lineThrough
+                                      : null,
                                   color: item.isDone ? Colors.grey : null,
                                 ),
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                              icon: const Icon(Icons.close,
+                                  size: 18, color: Colors.grey),
                               onPressed: () {
                                 setState(() {
                                   _checklist.removeAt(index);
@@ -269,6 +291,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                             decoration: const InputDecoration(
                               hintText: AppStrings.addChecklistItem,
                               border: InputBorder.none,
+                              filled: false,
                             ),
                             onSubmitted: (_) => _addChecklistItem(),
                           ),
@@ -306,7 +329,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     // Thêm Tag mới
                     Row(
                       children: [
-                        const Icon(Icons.label_outline, size: 20, color: Colors.grey),
+                        const Icon(Icons.label_outline,
+                            size: 20, color: Colors.grey),
                         const SizedBox(width: 8),
                         SizedBox(
                           width: 140,
@@ -315,6 +339,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Thêm thẻ...',
                               border: InputBorder.none,
+                              filled: false,
                             ),
                             onSubmitted: (tag) => _addTag(tag),
                           ),
@@ -331,10 +356,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
               // Thanh công cụ chọn màu nền phía dưới
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  8,
+                  16,
+                  8 + MediaQuery.paddingOf(context).bottom,
+                ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9),
-                  border: Border(top: BorderSide(color: Colors.grey.shade300, width: 0.5)),
+                  color: theme.scaffoldBackgroundColor.withValues(alpha: 0.94),
+                  border: Border(
+                    top: BorderSide(color: theme.dividerColor, width: 0.8),
+                  ),
                 ),
                 child: SizedBox(
                   height: 44,
@@ -359,12 +391,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                             color: color,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade400,
+                              color: isSelected
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.grey.shade400,
                               width: isSelected ? 2.5 : 1,
                             ),
                           ),
                           child: isSelected
-                              ? Icon(Icons.check, size: 18, color: Theme.of(context).primaryColor)
+                              ? Icon(Icons.check,
+                                  size: 18,
+                                  color: Theme.of(context).primaryColor)
                               : null,
                         ),
                       );

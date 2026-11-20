@@ -5,12 +5,14 @@ import '../../models/drive_backup_metadata.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/backup_provider.dart';
 import '../../providers/notes_provider.dart';
+import '../../services/google_drive_service.dart';
 
 class GoogleDriveBackupScreen extends StatefulWidget {
   const GoogleDriveBackupScreen({super.key});
 
   @override
-  State<GoogleDriveBackupScreen> createState() => _GoogleDriveBackupScreenState();
+  State<GoogleDriveBackupScreen> createState() =>
+      _GoogleDriveBackupScreenState();
 }
 
 class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
@@ -44,7 +46,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
     if (account != null && mounted) {
       context.read<BackupProvider>().fetchBackups(account);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã liên kết tài khoản Google: ${account.email}')),
+        SnackBar(
+            content: Text('Đã liên kết tài khoản Google: ${account.email}')),
       );
     }
   }
@@ -56,7 +59,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
 
     if (auth.googleUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng đăng nhập Google trước khi sao lưu')),
+        const SnackBar(
+            content: Text('Vui lòng đăng nhập Google trước khi sao lưu')),
       );
       return;
     }
@@ -187,7 +191,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Xác nhận xóa bản sao lưu'),
-        content: Text('Bạn có chắc chắn muốn xóa "${item.name}" khỏi Google Drive?'),
+        content:
+            Text('Bạn có chắc chắn muốn xóa "${item.name}" khỏi Google Drive?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -196,7 +201,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa vĩnh viễn', style: TextStyle(color: Colors.white)),
+            child: const Text('Xóa vĩnh viễn',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -204,6 +210,212 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
 
     if (confirmed == true) {
       await backup.deleteBackup(account: auth.googleUser!, fileId: item.id);
+    }
+  }
+
+  Future<void> _handleToggleAutoBackup(bool enabled) async {
+    final auth = context.read<AuthProvider>();
+    final backup = context.read<BackupProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (enabled && auth.googleUser == null) {
+      final account = await auth.connectGoogleAccount();
+      if (!mounted) return;
+
+      if (account == null) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Vui lòng kết nối tài khoản Google để bật tự động sao lưu.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      backup.fetchBackups(account);
+    }
+
+    await backup.setAutoBackupEnabled(enabled);
+    if (!mounted) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          enabled
+              ? 'Đã bật tự động sao lưu. T-Note sẽ sao lưu sau 30 giây khi có thay đổi.'
+              : 'Đã tắt tự động sao lưu Google Drive.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _retryAutoBackup() async {
+    final auth = context.read<AuthProvider>();
+    final notes = context.read<NotesProvider>();
+    final backup = context.read<BackupProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final account = auth.googleUser;
+    if (account == null) return;
+
+    final success = await backup.runAutoBackup(
+      account: account,
+      notes: notes.allNotes,
+    );
+    if (!mounted) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Đã tự động sao lưu ${backup.lastAutoBackupNoteCount} ghi chú thành công!'
+              : backup.lastAutoBackupError ??
+                  'Chưa thể tự động sao lưu lúc này.',
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAutoBackupStatus(
+    BackupProvider backup,
+    bool hasGoogleAccount,
+  ) {
+    final subtitleStyle = TextStyle(
+      fontSize: 12,
+      color: Colors.grey.shade700,
+      height: 1.35,
+    );
+
+    if (backup.isAutoBackupRunning) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Đang tự động sao lưu lên Google Drive...',
+              style: subtitleStyle,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (!backup.autoBackupEnabled) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.cloud_off_outlined, size: 18, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Bật tự động sao lưu để ghi chú luôn được bảo vệ trên Google Drive.',
+              style: subtitleStyle,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (!hasGoogleAccount) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            size: 18,
+            color: Colors.orange,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Tự động sao lưu đang bật nhưng chưa có tài khoản Google. Hãy kết nối để tiếp tục.',
+              style: subtitleStyle,
+            ),
+          ),
+        ],
+      );
+    }
+
+    switch (backup.autoBackupStatus) {
+      case AutoBackupStatus.success:
+        final lastDate = backup.lastAutoBackupDate;
+        final timeText = lastDate == null
+            ? 'vừa xong'
+            : DateFormat('dd/MM/yyyy HH:mm').format(lastDate);
+        final countText = backup.lastAutoBackupNoteCount > 0
+            ? ' • ${backup.lastAutoBackupNoteCount} ghi chú'
+            : '';
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              size: 18,
+              color: Colors.green,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Lần tự động sao lưu gần nhất: $timeText$countText',
+                style: subtitleStyle,
+              ),
+            ),
+          ],
+        );
+      case AutoBackupStatus.failed:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.error_outline, size: 18, color: Colors.red),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tự động sao lưu thất bại',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    backup.lastAutoBackupError ?? 'Lỗi không xác định',
+                    style: subtitleStyle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: _retryAutoBackup,
+              child: const Text('Thử lại', style: TextStyle(fontSize: 12)),
+            ),
+          ],
+        );
+      case AutoBackupStatus.idle:
+      case AutoBackupStatus.running:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.schedule, size: 18, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Chưa có lần tự động sao lưu nào. Bản sao lưu sẽ được tạo sau khi bạn thay đổi ghi chú.',
+                style: subtitleStyle,
+              ),
+            ),
+          ],
+        );
     }
   }
 
@@ -231,7 +443,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
         children: [
           // 1. Thẻ tài khoản Google
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 1,
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -255,13 +468,19 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              googleUser?.displayName ?? (googleUser != null ? 'Tài khoản Google' : 'Chưa liên kết Google'),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              googleUser?.displayName ??
+                                  (googleUser != null
+                                      ? 'Tài khoản Google'
+                                      : 'Chưa liên kết Google'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              googleUser?.email ?? 'Đăng nhập Google để kích hoạt sao lưu Drive cá nhân',
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                              googleUser?.email ??
+                                  'Đăng nhập Google để kích hoạt sao lưu Drive cá nhân',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey.shade600),
                             ),
                           ],
                         ),
@@ -272,16 +491,21 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                   if (googleUser != null)
                     Row(
                       children: [
-                        const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                        const Icon(Icons.check_circle,
+                            color: Colors.green, size: 16),
                         const SizedBox(width: 6),
                         const Text(
                           'Đã sẵn sàng sao lưu vào Google Drive',
-                          style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500),
                         ),
                         const Spacer(),
                         TextButton(
                           onPressed: () => auth.disconnectGoogleAccount(),
-                          child: const Text('Đăng xuất Google', style: TextStyle(fontSize: 12)),
+                          child: const Text('Đăng xuất Google',
+                              style: TextStyle(fontSize: 12)),
                         ),
                       ],
                     )
@@ -291,7 +515,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
                         icon: const Icon(Icons.g_mobiledata, size: 28),
                         label: const Text('Kết nối tài khoản Google'),
@@ -305,9 +530,53 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
 
           const SizedBox(height: 16),
 
-          // 2. Thao tác Sao lưu ngay
+          // 2. Tự động sao lưu
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 1,
+            child: Column(
+              children: [
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  secondary: Icon(
+                    Icons.cloud_sync_outlined,
+                    color: backup.autoBackupEnabled
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey,
+                  ),
+                  title: const Text(
+                    'Tự động sao lưu Google Drive',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  subtitle: const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Sao lưu sau 30 giây khi có thay đổi và ngay khi ứng dụng chuyển xuống nền.',
+                    ),
+                  ),
+                  value: backup.autoBackupEnabled,
+                  onChanged: _handleToggleAutoBackup,
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 12, 14),
+                  child: _buildAutoBackupStatus(backup, googleUser != null),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 3. Thao tác Sao lưu ngay
+          Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 1,
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -319,11 +588,13 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                     children: [
                       const Text(
                         'Sao lưu dữ liệu',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Chip(
                         label: Text('${notes.allNotes.length} ghi chú'),
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primaryContainer,
                       ),
                     ],
                   ),
@@ -339,7 +610,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                       labelText: 'Ghi chú mô tả (Tùy chọn)',
                       hintText: 'Ví dụ: Sao lưu trước khi đổi điện thoại...',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -348,20 +620,26 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                     height: 48,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: backup.isBackingUp
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.cloud_upload_outlined),
                       label: Text(
-                        backup.isBackingUp ? 'Đang tải lên Google Drive...' : 'Sao lưu ngay lên Google Drive',
+                        backup.isBackingUp
+                            ? 'Đang tải lên Google Drive...'
+                            : 'Sao lưu ngay lên Google Drive',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      onPressed: (googleUser == null || backup.isBackingUp) ? null : _handleBackupNow,
+                      onPressed: (googleUser == null || backup.isBackingUp)
+                          ? null
+                          : _handleBackupNow,
                     ),
                   ),
                 ],
@@ -371,7 +649,7 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
 
           const SizedBox(height: 20),
 
-          // 3. Danh sách các bản sao lưu trên Drive
+          // 4. Danh sách các bản sao lưu trên Drive
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -400,9 +678,11 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.cloud_off, size: 48, color: Colors.grey.shade400),
+                      Icon(Icons.cloud_off,
+                          size: 48, color: Colors.grey.shade400),
                       const SizedBox(height: 12),
-                      const Text('Hãy kết nối tài khoản Google để xem lịch sử sao lưu.'),
+                      const Text(
+                          'Hãy kết nối tài khoản Google để xem lịch sử sao lưu.'),
                     ],
                   ),
                 ),
@@ -420,7 +700,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey.shade400),
+                      Icon(Icons.inventory_2_outlined,
+                          size: 48, color: Colors.grey.shade400),
                       const SizedBox(height: 12),
                       const Text(
                         'Chưa có bản sao lưu nào trên Google Drive.',
@@ -429,7 +710,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Nhấn "Sao lưu ngay lên Google Drive" ở trên để tạo bản sao lưu đầu tiên!',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade600),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -441,7 +723,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
             ...backup.backups.map((item) {
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -452,25 +735,66 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primaryContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.file_present_outlined, color: Colors.deepPurple),
+                            child: const Icon(Icons.file_present_outlined,
+                                color: Colors.deepPurple),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        item.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (item.name ==
+                                        GoogleDriveService
+                                            .autoBackupFileName) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.deepPurple.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'Tự động',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.deepPurple,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  DateFormat('dd/MM/yyyy HH:mm:ss').format(item.createdTime),
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  DateFormat('dd/MM/yyyy HH:mm:ss')
+                                      .format(item.createdTime),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600),
                                 ),
                               ],
                             ),
@@ -488,7 +812,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                                 value: 'restore',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.restore, size: 20, color: Colors.blue),
+                                    Icon(Icons.restore,
+                                        size: 20, color: Colors.blue),
                                     SizedBox(width: 8),
                                     Text('Khôi phục ghi chú'),
                                   ],
@@ -498,9 +823,11 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                                    Icon(Icons.delete_outline,
+                                        size: 20, color: Colors.red),
                                     SizedBox(width: 8),
-                                    Text('Xóa bản sao lưu', style: TextStyle(color: Colors.red)),
+                                    Text('Xóa bản sao lưu',
+                                        style: TextStyle(color: Colors.red)),
                                   ],
                                 ),
                               ),
@@ -512,14 +839,16 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                         const SizedBox(height: 8),
                         Text(
                           item.description,
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade800),
                         ),
                       ],
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Chip(
-                            labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 4),
                             visualDensity: VisualDensity.compact,
                             label: Text(
                               '${item.noteCount > 0 ? item.noteCount : "?"} ghi chú',
@@ -528,7 +857,8 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                           ),
                           const SizedBox(width: 8),
                           Chip(
-                            labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 4),
                             visualDensity: VisualDensity.compact,
                             label: Text(
                               item.formattedSize,
@@ -539,7 +869,9 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                           TextButton.icon(
                             icon: const Icon(Icons.restore, size: 18),
                             label: const Text('Khôi phục'),
-                            onPressed: backup.isRestoring ? null : () => _confirmRestore(item),
+                            onPressed: backup.isRestoring
+                                ? null
+                                : () => _confirmRestore(item),
                           ),
                         ],
                       ),
@@ -551,7 +883,7 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
 
           const SizedBox(height: 20),
 
-          // 4. Thông tin Bảo mật & Quyền riêng tư
+          // 5. Thông tin Bảo mật & Quyền riêng tư
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -570,12 +902,18 @@ class _GoogleDriveBackupScreenState extends State<GoogleDriveBackupScreen> {
                     children: [
                       const Text(
                         'Bảo mật & Quyền riêng tư tuyệt đối',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.blue),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Ứng dụng chỉ sử dụng quyền "drive.file", nghĩa là chỉ có quyền đọc/ghi trên các tệp do T-Note tạo ra trong thư mục "T-Note Backups" trên Google Drive của bạn. Ứng dụng hoàn toàn KHÔNG THỂ xem, sửa hoặc xóa bất kỳ ảnh, tài liệu hoặc dữ liệu nào khác trên Google Drive của bạn.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade800, height: 1.4),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade800,
+                            height: 1.4),
                       ),
                     ],
                   ),
