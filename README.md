@@ -94,21 +94,39 @@ flutter pub get
 ```
 
 ### Bước 3: Kết nối dự án Firebase & Kích hoạt Google Sign-In, Google Drive
-1. Truy cập [Firebase Console](https://console.firebase.google.com/) và tạo một dự án mới (ví dụ đặt tên: `note-ntt-app`).
+1. Truy cập [Firebase Console](https://console.firebase.google.com/) và mở dự án `note-ntt` (hoặc tạo mới nếu chưa có).
 2. Bật dịch vụ **Authentication**:
    - Tab Sign-in method -> Bật **Email/Password**, **Anonymous** (Khách) và **Google**.
-   - Thêm mã vân tay SHA-1 và SHA-256 của máy phát triển vào mục Android App trong Project Settings.
+   - Trong **Project Settings → Your apps**, tạo/chọn app Android có package name `com.ntt.notentt` (đúng với `applicationId` trong `android/app/build.gradle`).
+   - Thêm mã vân tay **SHA-1** và **SHA-256** của debug keystore, release keystore và Play App Signing (nếu phát hành) vào app Android đó.
 3. Bật **Cloud Firestore Database** (chọn chế độ Test mode hoặc dán nội dung file `firestore.rules` vào tab Rules).
 4. Bật **Google Drive API**:
    - Truy cập [Google Cloud Console](https://console.cloud.google.com/) cùng dự án Firebase trên.
    - Tìm kiếm và kích hoạt **Google Drive API**.
    - Vào OAuth Consent Screen, khai báo scope `https://www.googleapis.com/auth/drive.file`.
-5. Cài đặt FlutterFire CLI và liên kết dự án:
+5. Cài FlutterFire CLI và tạo lại cấu hình cho đúng app/package:
    ```bash
    dart pub global activate flutterfire_cli
    flutterfire configure
    ```
-   *Lệnh này sẽ tự động đăng ký App trên Android, iOS, Windows/Web và tạo file `lib/firebase_options.dart` chuẩn xác cho bạn.*
+   Chọn dự án `note-ntt` và nền tảng Android. Lệnh này ghi lại `lib/firebase_options.dart` và `android/app/google-services.json` cho package `com.ntt.notentt`.
+6. Lấy **Web client ID** cho Google Sign-In:
+   - Trong Google Cloud Console → **APIs & Services → Credentials → OAuth 2.0 Client IDs**.
+   - Chọn client loại **Web application** (thường tên "Web client (auto created by Google Service)"), copy **Client ID**.
+   - Chạy app kèm tham số:
+     ```bash
+     flutter run --dart-define=GOOGLE_WEB_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
+     ```
+   - Khi build release:
+     ```bash
+     flutter build apk --release --dart-define=GOOGLE_WEB_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
+     ```
+7. (Tùy chọn) Nếu muốn dùng plugin google-services thay cho `--dart-define`:
+   - Đảm bảo `android/app/google-services.json` đúng package và có `oauth_client` web client.
+   - `flutterfire configure` có thể tự thêm plugin; nếu chưa có, thêm dòng `apply plugin: "com.google.gms.google-services"` ngay sau khối `plugins { ... }` trong `android/app/build.gradle`.
+   - Khi đó plugin tự sinh `default_web_client_id`, không cần `--dart-define`.
+
+> **Lưu ý:** `android/app/google-services.json` hiện tại đang dùng package `com.ntt.note_ntt` và có `oauth_client` rỗng, nên chưa dùng được cho app `com.ntt.notentt`. Ngoài ra dự án hiện chỉ có thư mục `android/`, vì vậy Google Sign-In chỉ chạy trên Android.
 
 ### Bước 4: Chạy ứng dụng
 

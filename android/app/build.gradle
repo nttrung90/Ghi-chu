@@ -2,6 +2,13 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    // Chưa bật plugin này vì android/app/google-services.json hiện có
+    // package com.ntt.note_ntt (không khớp applicationId com.ntt.notentt)
+    // và oauth_client rỗng. Bật plugin lúc này sẽ làm Gradle báo
+    // "No matching client found for package name".
+    // Sau khi tải lại google-services.json đúng package, thêm dòng sau
+    // ngay bên dưới khối plugins { ... }:
+    // apply plugin: "com.google.gms.google-services"
     id "com.google.gms.google-services" version "4.4.1" apply false
 }
 

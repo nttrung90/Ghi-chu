@@ -1,14 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../core/config/google_auth_config.dart';
 
 /// Quản lý xác thực người dùng qua Firebase Authentication & Google Sign-In
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
+    scopes: const [
       'email',
       'https://www.googleapis.com/auth/drive.file',
     ],
+    // Android cần serverClientId (web client ID) để Google trả về idToken
+    // cho Firebase. Nếu dùng google-services.json + plugin google-services
+    // thì plugin sẽ tự sinh default_web_client_id, nhưng cấu hình hiện tại
+    // của dự án chưa dùng plugin đó.
+    serverClientId:
+        GoogleAuthConfig.hasWebClientId ? GoogleAuthConfig.webClientId : null,
   );
 
   FirebaseAuth get auth => _auth;

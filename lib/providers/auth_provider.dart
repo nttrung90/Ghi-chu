@@ -56,7 +56,7 @@ class AuthProvider extends ChangeNotifier {
       _errorMessage = null;
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _friendlyGoogleError(e);
       return false;
     } finally {
       _setLoading(false);
@@ -72,11 +72,27 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return account;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = _friendlyGoogleError(e);
       return null;
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Chuyển lỗi Google Sign-In thành thông báo dễ hiểu cho người dùng.
+  String _friendlyGoogleError(Object error) {
+    final message = error.toString();
+    if (message.contains('ApiException: 10') ||
+        message.contains('DEVELOPER_ERROR')) {
+      return 'Chưa cấu hình Google Sign-In cho ứng dụng. '
+          'Hãy thêm SHA-1/SHA-256 và OAuth client trong Firebase Console.';
+    }
+    if (message.contains('API key not valid') ||
+        message.contains('CONFIGURATION_NOT_FOUND')) {
+      return 'Cấu hình Firebase chưa đúng. '
+          'Hãy chạy flutterfire configure để cập nhật firebase_options.dart.';
+    }
+    return message;
   }
 
   /// Hủy kết nối tài khoản Google
